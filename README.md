@@ -28,7 +28,8 @@ The app will automatically attempt to download weather data for your current app
 
 ## Credits
 
-Icons are from [boxicons.com](https://boxicons.com) (MIT-licensed).
+- Icons are from [boxicons.com](https://boxicons.com) (MIT-licensed).
+- Made possible by the generous usage terms of [open-meteo.com](https://open-meteo.com)
 
 ## Links
 
