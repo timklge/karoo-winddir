@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ExtensionInfo
+    displayName="@string/extension_name"
+    icon="@drawable/ic_launcher"
+    id="karoo-winddir"
+    scansDevices="false">
+    <DataType
+        description="@string/winddir_description"
+        displayName="@string/winddir"
+        graphical="true"
+        icon="@drawable/ic_launcher"
+        typeId="winddir" />
+
+    <DataType
+        description="@string/relativeHumidity_description"
+        displayName="@string/relativeHumidity"
+        graphical="false"
+        icon="@drawable/ic_water"
+        typeId="relativeHumidity" />
+
+    <DataType
+        description="@string/cloudCover_description"
+        displayName="@string/cloudCover"
+        graphical="false"
+        icon="@drawable/ic_cloud"
+        typeId="cloudCover" />
+
+    <DataType
+        description="@string/windSpeed_description"
+        displayName="@string/windSpeed"
+        graphical="false"
+        icon="@drawable/ic_launcher"
+        typeId="windSpeed" />
+
+    <DataType
+        description="@string/windGusts_description"
+        displayName="@string/windGusts"
+        graphical="false"
+        icon="@drawable/ic_launcher"
+        typeId="windGusts" />
+
+    <DataType
+        description="@string/windDirection_description"
+        displayName="@string/windDirection"
+        graphical="true"
+        icon="@drawable/ic_launcher"
+        typeId="windDirection" />
+
+    <DataType
+        description="@string/precipitation_description"
+        displayName="@string/precipitation"
+        graphical="false"
+        icon="@drawable/ic_water"
+        typeId="precipitation" />
+
+    <DataType
+        description="@string/surfacePressure_description"
+        displayName="@string/surfacePressure"
+        graphical="false"
+        icon="@drawable/ic_cloud"
+        typeId="surfacePressure" />
+</ExtensionInfo>

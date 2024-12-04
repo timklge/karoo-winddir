@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Winddir</string>
+    <string name="extension_name">winddir</string>
+    <string name="winddir">Wind direction</string>
+    <string name="winddir_description">Current wind direction relative to the riding direction</string>
+    <string name="relativeHumidity">Humidity</string>
+    <string name="relativeHumidity_description">Relative humidity in percent</string>
+    <string name="cloudCover">Cloud cover</string>
+    <string name="cloudCover_description">Current cloud cover in percent</string>
+    <string name="windSpeed">Wind speed</string>
+    <string name="windSpeed_description">Current wind speed in configured unit</string>
+    <string name="windGusts">Wind gusts</string>
+    <string name="windGusts_description">Current wind gust speed in configured unit</string>
+    <string name="windDirection">Absolute wind direction</string>
+    <string name="windDirection_description">Current wind direction</string>
+    <string name="precipitation">Rainfall</string>
+    <string name="precipitation_description">Current precipitation (rainfall / snowfall)</string>
+    <string name="surfacePressure">Surface pressure</string>
+    <string name="surfacePressure_description">Atmospheric pressure at surface in configured unit</string>
+</resources>
