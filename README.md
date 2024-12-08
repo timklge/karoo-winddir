@@ -8,10 +8,9 @@ It also provides data fields for relative humidity, cloud coverage, wind speed, 
 
 Compatible with Karoo 2 and Karoo 3 devices running Karoo OS version 1.524.2003 and later.
 
-![Map previw](preview0.png)
+![Settings](preview0.png)
 ![Field setup](preview1.png)
 ![Data page](preview2.png)
-![Settings](preview3.png)
 
 ## Installation
 
