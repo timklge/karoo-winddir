@@ -122,7 +122,7 @@ fun MainScreen() {
     Column(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.background)) {
-        TopAppBar(title = { Text("WindDir") })
+        TopAppBar(title = { Text("Headwind") })
         Column(modifier = Modifier
             .padding(5.dp)
             .verticalScroll(rememberScrollState())
