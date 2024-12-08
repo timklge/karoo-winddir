@@ -19,6 +19,13 @@
         typeId="weather" />
 
     <DataType
+        description="@string/headwind_speed_description"
+        displayName="@string/headwind_speed"
+        graphical="false"
+        icon="@drawable/ic_launcher"
+        typeId="headwindSpeed" />
+
+    <DataType
         description="@string/relativeHumidity_description"
         displayName="@string/relativeHumidity"
         graphical="false"

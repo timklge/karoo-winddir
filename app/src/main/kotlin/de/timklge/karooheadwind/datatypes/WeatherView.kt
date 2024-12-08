@@ -49,7 +49,7 @@ fun Weather(current: WeatherInterpretation, windBearing: Int, windSpeed: Int, wi
                 modifier = GlanceModifier.height(imageH.dp).width(imageW.dp),
                 provider = ImageProvider(getWeatherIcon(current)),
                 contentDescription = "Current weather information",
-                contentScale = ContentScale.FillBounds,
+                contentScale = ContentScale.Fit,
                 colorFilter = ColorFilter.tint(ColorProvider(Color.Black, Color.White))
             )
         }

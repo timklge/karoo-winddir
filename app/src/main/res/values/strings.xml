@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">WindDir</string>
+    <string name="app_name">Headwind</string>
     <string name="extension_name">headwind</string>
-    <string name="headwind">Wind direction</string>
-    <string name="headwind_description">Current wind direction relative to the riding direction</string>
+    <string name="headwind">Headwind</string>
+    <string name="headwind_description">Current headwind direction</string>
     <string name="relativeHumidity">Humidity</string>
     <string name="relativeHumidity_description">Relative humidity in percent</string>
     <string name="cloudCover">Cloud cover</string>
@@ -19,4 +19,6 @@
     <string name="surfacePressure_description">Atmospheric pressure at surface in configured unit</string>
     <string name="weather">Weather</string>
     <string name="weather_description">Current weather conditions</string>
+    <string name="headwind_speed">Headwind speed</string>
+    <string name="headwind_speed_description">Current headwind speed</string>
 </resources>

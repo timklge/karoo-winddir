@@ -47,7 +47,7 @@ fun getArrowResourceByBearing(bearing: Int): Int {
 @OptIn(ExperimentalGlancePreviewApi::class)
 @Preview(widthDp = 200, heightDp = 150)
 @Composable
-fun RelativeWindDirection(bearing: Int, fontSize: Int, overlayText: String? = null) {
+fun HeadwindDirection(bearing: Int, fontSize: Int, overlayText: String? = null) {
     Box(
         modifier = GlanceModifier.fillMaxSize().padding(5.dp),
         contentAlignment = Alignment(

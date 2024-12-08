@@ -8,8 +8,8 @@ import de.timklge.karooheadwind.datatypes.RelativeHumidityDataType
 import de.timklge.karooheadwind.datatypes.SurfacePressureDataType
 import de.timklge.karooheadwind.datatypes.WindDirectionDataType
 import de.timklge.karooheadwind.datatypes.WindGustsDataType
-import de.timklge.karooheadwind.datatypes.WindSpeedDataType
-import de.timklge.karooheadwind.datatypes.RelativeWindDirectionDataType
+import de.timklge.karooheadwind.datatypes.HeadwindSpeedDataType
+import de.timklge.karooheadwind.datatypes.HeadwindDirectionDataType
 import de.timklge.karooheadwind.datatypes.WeatherDataType
 import de.timklge.karooheadwind.screens.HeadwindStats
 import io.hammerhead.karooext.KarooSystemService
@@ -40,11 +40,12 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.0.0-beta2") {
 
     override val types by lazy {
         listOf(
-            RelativeWindDirectionDataType(karooSystem, applicationContext),
+            HeadwindDirectionDataType(karooSystem, applicationContext),
+            HeadwindSpeedDataType(karooSystem, applicationContext),
             WeatherDataType(karooSystem, applicationContext),
+            HeadwindSpeedDataType(karooSystem, applicationContext),
             RelativeHumidityDataType(applicationContext),
             CloudCoverDataType(applicationContext),
-            WindSpeedDataType(applicationContext),
             WindGustsDataType(applicationContext),
             WindDirectionDataType(karooSystem, applicationContext),
             PrecipitationDataType(applicationContext),

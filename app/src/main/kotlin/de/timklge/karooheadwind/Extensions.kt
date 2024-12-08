@@ -20,6 +20,7 @@ import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
@@ -32,6 +33,7 @@ import kotlinx.coroutines.time.debounce
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.Duration
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
@@ -142,8 +144,42 @@ suspend fun KarooSystemService.makeOpenMeteoHttpRequest(gpsCoordinates: GpsCoord
     }.single()
 }
 
+fun signedAngleDifference(angle1: Double, angle2: Double): Double {
+    val a1 = angle1 % 360
+    val a2 = angle2 % 360
+    var diff = abs(a1 - a2)
+
+    val sign = if (a1 < a2) {
+        if (diff > 180.0) -1 else 1
+    } else {
+        if (diff > 180.0) 1 else -1
+    }
+
+    if (diff > 180.0) {
+        diff = 360.0 - diff
+    }
+
+    return sign * diff
+}
+
+fun KarooSystemService.getRelativeHeadingFlow(context: Context): Flow<Double> {
+    val currentWeatherData = context.streamCurrentWeatherData()
+
+    return getHeadingFlow()
+        .filter { it >= 0 }
+        .combine(currentWeatherData) { cardinalDirection, data -> cardinalDirection to data }
+        .map { (cardinalDirection, data) ->
+            val bearing = cardinalDirection * 45.0
+            val windBearing = data.current.windDirection + 180
+            val diff = (signedAngleDifference(bearing, windBearing) + 360) % 360
+            Log.d(KarooHeadwindExtension.TAG, "Wind bearing: $bearing vs $windBearing => $diff")
+
+            diff
+        }
+}
+
 fun KarooSystemService.getHeadingFlow(): Flow<Int> {
-    return flowOf(2)
+    // return flowOf(2)
 
     return streamDataFlow(DataType.Type.HEADING)
         .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue }
@@ -153,7 +189,7 @@ fun KarooSystemService.getHeadingFlow(): Flow<Int> {
 
 @OptIn(FlowPreview::class)
 fun KarooSystemService.getGpsCoordinateFlow(): Flow<GpsCoordinates> {
-    return flowOf(GpsCoordinates(52.5164069,13.3784))
+    // return flowOf(GpsCoordinates(52.5164069,13.3784))
 
     return streamDataFlow("TYPE_LOCATION_ID")
         .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.values }
