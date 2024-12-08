@@ -12,6 +12,13 @@
         typeId="winddir" />
 
     <DataType
+        description="@string/weather_description"
+        displayName="@string/weather"
+        graphical="true"
+        icon="@drawable/ic_launcher"
+        typeId="weather" />
+
+    <DataType
         description="@string/relativeHumidity_description"
         displayName="@string/relativeHumidity"
         graphical="false"

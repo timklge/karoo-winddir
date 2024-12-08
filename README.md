@@ -24,11 +24,11 @@ Currently, Hammerhead has not yet released an on-device app store for easy insta
 
 After installing this app on your Karoo, you can add a data field showing the relative wind direction or one of the auxiliary fields to your data pages. The relative wind direction will be shown as an arrow image, with an optional overlay of the wind speed in your chosen unit of measurement (default is kilometers per hour).
 
-The app will automatically attempt to download weather data for your current approximate location from the [open-meteo.com](https://open-meteo.com) API once your device has acquired a GPS fix. The API service is free for non-commercial use. Your location is rounded to approximately two kilometers to maintain privacy. The data is updated when you ride more than two kilometers from the location where the weather data was downloaded or after one hour at the latest. If the app cannot connect to the weather service, it will retry the download every minute. Downloading weather data should work on Karoo 2 if you have a SIM card inserted or on Karoo 3 via the companion app.
+The app will automatically attempt to download weather data for your current approximate location from the [open-meteo.com](https://open-meteo.com) API once your device has acquired a GPS fix. The API service is free for non-commercial use. Your location is rounded to approximately two kilometers to maintain privacy. The data is updated when you ride more than two kilometers from the location where the weather data was downloaded or after one hour at the latest. If the app cannot connect to the weather service, it will retry the download every minute. Downloading weather data should work on Karoo 2 if you have a SIM card inserted or on Karoo 3 via your phone's internet connection if you have the Karoo companion app installed.
 
 ## Credits
 
-- Icons are from [boxicons.com](https://boxicons.com) (MIT-licensed).
+- Icons are from [boxicons.com](https://boxicons.com) (MIT-licensed)
 - Made possible by the generous usage terms of [open-meteo.com](https://open-meteo.com)
 
 ## Links

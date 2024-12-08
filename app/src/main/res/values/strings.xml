@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Winddir</string>
+    <string name="app_name">WindDir</string>
     <string name="extension_name">winddir</string>
     <string name="winddir">Wind direction</string>
     <string name="winddir_description">Current wind direction relative to the riding direction</string>
@@ -17,4 +17,6 @@
     <string name="precipitation_description">Current precipitation (rainfall / snowfall)</string>
     <string name="surfacePressure">Surface pressure</string>
     <string name="surfacePressure_description">Atmospheric pressure at surface in configured unit</string>
+    <string name="weather">Weather</string>
+    <string name="weather_description">Current weather conditions</string>
 </resources>

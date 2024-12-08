@@ -9,7 +9,8 @@ import de.timklge.karoowinddir.datatypes.SurfacePressureDataType
 import de.timklge.karoowinddir.datatypes.WindDirectionDataType
 import de.timklge.karoowinddir.datatypes.WindGustsDataType
 import de.timklge.karoowinddir.datatypes.WindSpeedDataType
-import de.timklge.karoowinddir.datatypes.WinddirDataType
+import de.timklge.karoowinddir.datatypes.RelativeWindDirectionDataType
+import de.timklge.karoowinddir.datatypes.WeatherDataType
 import de.timklge.karoowinddir.screens.WinddirStats
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.KarooExtension
@@ -39,7 +40,8 @@ class KarooWinddirExtension : KarooExtension("karoo-winddir", "1.0.0-beta1") {
 
     override val types by lazy {
         listOf(
-            WinddirDataType(karooSystem, applicationContext),
+            RelativeWindDirectionDataType(karooSystem, applicationContext),
+            WeatherDataType(karooSystem, applicationContext),
             RelativeHumidityDataType(applicationContext),
             CloudCoverDataType(applicationContext),
             WindSpeedDataType(applicationContext),

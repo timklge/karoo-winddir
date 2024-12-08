@@ -13,8 +13,28 @@ data class OpenMeteoData(
     @SerialName("surface_pressure") val surfacePressure: Double,
     @SerialName("wind_speed_10m") val windSpeed: Double,
     @SerialName("wind_direction_10m") val windDirection: Double,
-    @SerialName("wind_gusts_10m") val windGusts: Double
+    @SerialName("wind_gusts_10m") val windGusts: Double,
+    @SerialName("weather_code") val weatherCode: Int,
 )
+
+enum class WeatherInterpretation {
+    CLEAR, CLOUDY, RAINY, SNOWY, DRIZZLE, THUNDERSTORM, UNKNOWN;
+
+    companion object {
+        // WMO weather interpretation codes (WW)
+        fun fromWeatherCode(code: Int): WeatherInterpretation {
+            return when(code){
+                0 -> CLEAR
+                1, 2, 3 -> CLOUDY
+                45, 48, 61, 63, 65, 66, 67, 80, 81, 82 -> RAINY
+                71, 73, 75, 77, 85, 86 -> SNOWY
+                51, 53, 55, 56, 57 -> DRIZZLE
+                95, 96, 99 -> THUNDERSTORM
+                else -> UNKNOWN
+            }
+        }
+    }
+}
 
 @Serializable
 data class OpenMeteoCurrentWeatherResponse(

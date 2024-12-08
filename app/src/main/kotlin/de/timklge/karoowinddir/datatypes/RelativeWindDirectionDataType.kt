@@ -1,7 +1,7 @@
 package de.timklge.karoowinddir.datatypes
 
-import android.util.Log
 import android.content.Context
+import android.util.Log
 import androidx.compose.ui.unit.DpSize
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
@@ -23,7 +23,6 @@ import io.hammerhead.karooext.models.UpdateGraphicConfig
 import io.hammerhead.karooext.models.ViewConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
@@ -31,10 +30,11 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.cos
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalGlanceRemoteViewsApi::class)
-class WinddirDataType(
+class RelativeWindDirectionDataType(
     private val karooSystem: KarooSystemService,
     private val applicationContext: Context
 ) : DataTypeImpl("karoo-winddir", "winddir") {
@@ -59,7 +59,6 @@ class WinddirDataType(
     }
 
     override fun startStream(emitter: Emitter<StreamState>) {
-        Log.d(KarooWinddirExtension.TAG, "start winddir stream")
         val job = CoroutineScope(Dispatchers.IO).launch {
             val currentWeatherData = applicationContext.streamCurrentWeatherData()
 
@@ -72,19 +71,17 @@ class WinddirDataType(
                     val windBearing = data.current.windDirection + 180
 
                     val diff = (signedAngleDifference(bearing, windBearing) + 360) % 360
-                    Log.d(KarooWinddirExtension.TAG, "wind bearing: $bearing vs $windBearing => $diff")
+                    Log.d(KarooWinddirExtension.TAG, "Wind bearing: $bearing vs $windBearing => $diff")
                     emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to diff))))
                 }
         }
         emitter.setCancellable {
-            Log.d(KarooWinddirExtension.TAG, "stop winddir stream")
             job.cancel()
         }
     }
 
-    @OptIn(ObsoleteCoroutinesApi::class)
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
-        Log.d(KarooWinddirExtension.TAG, "Starting winddir view with $emitter")
+        Log.d(KarooWinddirExtension.TAG, "Starting relative wind direction view with $emitter")
         val configJob = CoroutineScope(Dispatchers.IO).launch {
             emitter.onNext(UpdateGraphicConfig(showHeader = false))
             awaitCancellation()
@@ -98,15 +95,19 @@ class WinddirDataType(
                 .combine(context.streamCurrentWeatherData()) { value, data -> value to data }
                 .combine(context.streamSettings()) { (value, data), settings -> StreamData(value, data, settings) }
                 .onCompletion {
+                    // Clear view on completion
                     val result = glance.compose(context, DpSize.Unspecified) { }
                     emitter.updateView(result.remoteViews)
                 }
                 .collect { streamData ->
-                    Log.d(KarooWinddirExtension.TAG, "Updating view")
-                    val windSpeedText = if(streamData.settings.showWindspeedOverlay) "${streamData.data.current.windSpeed.roundToInt()}" else null
+                    Log.d(KarooWinddirExtension.TAG, "Updating relative wind direction view")
+                    val windSpeed = streamData.data.current.windSpeed
+                    val windDirection = streamData.value
+                    val headwindSpeed = cos( (windDirection + 180) * Math.PI / 180.0) * windSpeed
+                    val windSpeedText = if(streamData.settings.showWindspeedOverlay) "${headwindSpeed.roundToInt()}" else null
 
                     val result = glance.compose(context, DpSize.Unspecified) {
-                        RelativeWindDirection(streamData.value.roundToInt(), config.textSize, windSpeedText)
+                        RelativeWindDirection(windDirection.roundToInt(), config.textSize, windSpeedText)
                     }
 
                     emitter.updateView(result.remoteViews)

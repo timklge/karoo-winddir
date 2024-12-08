@@ -3,22 +3,17 @@ package de.timklge.karoowinddir.datatypes
 import android.content.Context
 import android.util.Log
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
-import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
-import androidx.glance.background
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.padding
 import androidx.glance.text.FontFamily
-import androidx.glance.text.FontStyle
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import de.timklge.karoowinddir.KarooWinddirExtension
@@ -36,7 +31,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-class WindDirectionDataType(val karooSystem: KarooSystemService, context: Context) : WeatherDataType(context, "windDirection"){
+class WindDirectionDataType(val karooSystem: KarooSystemService, context: Context) : BaseDataType(context, "windDirection"){
     @OptIn(ExperimentalGlanceRemoteViewsApi::class)
     private val glance = GlanceRemoteViews()
 

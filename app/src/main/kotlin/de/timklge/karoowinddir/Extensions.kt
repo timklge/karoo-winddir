@@ -80,7 +80,7 @@ fun Context.streamCurrentWeatherData(): Flow<OpenMeteoCurrentWeatherResponse> {
             Log.e(KarooWinddirExtension.TAG, "Failed to read preferences", e)
             null
         }
-    }.filterNotNull().distinctUntilChanged().filter { it.current.time * 1000 >= System.currentTimeMillis() - (1000 * 60 * 60 * 3) }
+    }.filterNotNull().distinctUntilChanged().filter { it.current.time * 1000 >= System.currentTimeMillis() - (1000 * 60 * 60 * 12) }
 }
 
 fun Context.streamSettings(): Flow<WinddirSettings> {
@@ -112,8 +112,8 @@ fun Context.streamStats(): Flow<WinddirStats> {
 @OptIn(FlowPreview::class)
 suspend fun KarooSystemService.makeOpenMeteoHttpRequest(gpsCoordinates: GpsCoordinates, settings: WinddirSettings): HttpResponseState.Complete {
     return callbackFlow {
-        // https://open-meteo.com/en/docs#current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=&daily=&location_mode=csv_coordinates&timeformat=unixtime&forecast_days=3
-        val url = "https://api.open-meteo.com/v1/forecast?latitude=${gpsCoordinates.lat}&longitude=${gpsCoordinates.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure&timeformat=unixtime&wind_speed_unit=${settings.windUnit.id}&precipitation_unit=${settings.precipitationUnit.id}"
+        // https://open-meteo.com/en/docs#current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=&daily=&location_mode=csv_coordinates&timeformat=unixtime&forecast_days=3
+        val url = "https://api.open-meteo.com/v1/forecast?latitude=${gpsCoordinates.lat}&longitude=${gpsCoordinates.lon}&current=weather_code,temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure&timeformat=unixtime&wind_speed_unit=${settings.windUnit.id}&precipitation_unit=${settings.precipitationUnit.id}"
 
         Log.d(KarooWinddirExtension.TAG, "Http request to ${url}...")
 
@@ -143,7 +143,7 @@ suspend fun KarooSystemService.makeOpenMeteoHttpRequest(gpsCoordinates: GpsCoord
 }
 
 fun KarooSystemService.getHeadingFlow(): Flow<Int> {
-    // return flowOf(2)
+    return flowOf(2)
 
     return streamDataFlow(DataType.Type.HEADING)
         .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue }
@@ -153,7 +153,7 @@ fun KarooSystemService.getHeadingFlow(): Flow<Int> {
 
 @OptIn(FlowPreview::class)
 fun KarooSystemService.getGpsCoordinateFlow(): Flow<GpsCoordinates> {
-    // return flowOf(GpsCoordinates(52.5164069,13.3784))
+    return flowOf(GpsCoordinates(52.5164069,13.3784))
 
     return streamDataFlow("TYPE_LOCATION_ID")
         .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.values }
