@@ -34,5 +34,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Karoo Winddir"
+rootProject.name = "Karoo Headwind"
 include("app")

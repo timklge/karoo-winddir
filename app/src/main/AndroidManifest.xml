@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat">
         <activity
-            android:name="de.timklge.karoowinddir.MainActivity"
+            android:name="de.timklge.karooheadwind.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,7 +19,7 @@
         </activity>
 
         <service
-            android:name="de.timklge.karoowinddir.KarooWinddirExtension"
+            android:name="de.timklge.karooheadwind.KarooHeadwindExtension"
             android:exported="true"
             tools:ignore="ExportedService">
             <intent-filter>
@@ -32,6 +32,6 @@
 
         <meta-data
             android:name="io.hammerhead.karooext.MANIFEST_URL"
-            android:value="https://github.com/timklge/karoo-winddir/releases/latest/download/manifest.json" />
+            android:value="https://github.com/timklge/karoo-headwind/releases/latest/download/manifest.json" />
     </application>
 </manifest>

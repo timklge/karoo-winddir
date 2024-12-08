@@ -1,4 +1,4 @@
-package de.timklge.karoowinddir.datatypes
+package de.timklge.karooheadwind.datatypes
 
 import kotlinx.serialization.Serializable
 import kotlin.math.atan2

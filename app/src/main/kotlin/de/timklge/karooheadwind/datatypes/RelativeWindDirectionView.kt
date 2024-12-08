@@ -1,4 +1,4 @@
-package de.timklge.karoowinddir.datatypes
+package de.timklge.karooheadwind.datatypes
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -20,7 +20,7 @@ import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import de.timklge.karoowinddir.R
+import de.timklge.karooheadwind.R
 import kotlin.math.roundToInt
 
 fun getArrowResourceByBearing(bearing: Int): Int {

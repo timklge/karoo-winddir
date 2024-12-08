@@ -1,7 +1,7 @@
-package de.timklge.karoowinddir.datatypes
+package de.timklge.karooheadwind.datatypes
 
 import android.content.Context
-import de.timklge.karoowinddir.OpenMeteoCurrentWeatherResponse
+import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
 
 class CloudCoverDataType(context: Context) : BaseDataType(context, "cloudCover"){
     override fun getValue(data: OpenMeteoCurrentWeatherResponse): Double {

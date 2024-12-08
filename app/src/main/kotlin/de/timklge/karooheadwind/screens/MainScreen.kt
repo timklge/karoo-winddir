@@ -1,4 +1,4 @@
-package de.timklge.karoowinddir.screens
+package de.timklge.karooheadwind.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -35,11 +35,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import de.timklge.karoowinddir.datatypes.GpsCoordinates
-import de.timklge.karoowinddir.getGpsCoordinateFlow
-import de.timklge.karoowinddir.saveSettings
-import de.timklge.karoowinddir.streamSettings
-import de.timklge.karoowinddir.streamStats
+import de.timklge.karooheadwind.datatypes.GpsCoordinates
+import de.timklge.karooheadwind.getGpsCoordinateFlow
+import de.timklge.karooheadwind.saveSettings
+import de.timklge.karooheadwind.streamSettings
+import de.timklge.karooheadwind.streamStats
 import io.hammerhead.karooext.KarooSystemService
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -64,25 +64,25 @@ enum class PrecipitationUnit(val id: String, val label: String){
 }
 
 @Serializable
-data class WinddirSettings(
+data class HeadwindSettings(
     val windUnit: WindUnit = WindUnit.KILOMETERS_PER_HOUR,
     val precipitationUnit: PrecipitationUnit = PrecipitationUnit.MILLIMETERS,
     val welcomeDialogAccepted: Boolean = false,
     val showWindspeedOverlay: Boolean = true
 ){
     companion object {
-        val defaultSettings = Json.encodeToString(WinddirSettings())
+        val defaultSettings = Json.encodeToString(HeadwindSettings())
     }
 }
 
 @Serializable
-data class WinddirStats(
+data class HeadwindStats(
     val lastSuccessfulWeatherRequest: Long? = null,
     val lastSuccessfulWeatherPosition: GpsCoordinates? = null,
     val failedWeatherRequest: Long? = null,
 ){
     companion object {
-        val defaultStats = Json.encodeToString(WinddirStats())
+        val defaultStats = Json.encodeToString(HeadwindStats())
     }
 }
 
@@ -99,7 +99,7 @@ fun MainScreen() {
     var welcomeDialogVisible by remember { mutableStateOf(false) }
     var showWindspeedOverlay by remember { mutableStateOf(false) }
 
-    val stats by ctx.streamStats().collectAsState(WinddirStats())
+    val stats by ctx.streamStats().collectAsState(HeadwindStats())
     val location by karooSystem.getGpsCoordinateFlow().collectAsState(initial = null)
 
     var savedDialogVisible by remember { mutableStateOf(false) }
@@ -143,13 +143,13 @@ fun MainScreen() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Switch(checked = showWindspeedOverlay, onCheckedChange = { showWindspeedOverlay = it})
                 Spacer(modifier = Modifier.width(10.dp))
-                Text("Show wind speed on direction field")
+                Text("Show headwind speed on arrow")
             }
 
             FilledTonalButton(modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp), onClick = {
-                    val newSettings = WinddirSettings(windUnit = selectedWindUnit, precipitationUnit = selectedPrecipitationUnit, welcomeDialogAccepted = true, showWindspeedOverlay = showWindspeedOverlay)
+                    val newSettings = HeadwindSettings(windUnit = selectedWindUnit, precipitationUnit = selectedPrecipitationUnit, welcomeDialogAccepted = true, showWindspeedOverlay = showWindspeedOverlay)
 
                     coroutineScope.launch {
                         saveSettings(ctx, newSettings)
@@ -198,16 +198,16 @@ fun MainScreen() {
         AlertDialog(onDismissRequest = { },
             confirmButton = { Button(onClick = {
                 coroutineScope.launch {
-                    saveSettings(ctx, WinddirSettings(windUnit = selectedWindUnit, precipitationUnit = selectedPrecipitationUnit, welcomeDialogAccepted = true))
+                    saveSettings(ctx, HeadwindSettings(windUnit = selectedWindUnit, precipitationUnit = selectedPrecipitationUnit, welcomeDialogAccepted = true))
                 }
             }) { Text("OK") } },
             text = {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    Text("Welcome to karoo-winddir!")
+                    Text("Welcome to karoo-headwind!")
 
                     Spacer(Modifier.padding(10.dp))
 
-                    Text("You can add relative wind direction and other fields to your data pages in your profile settings.")
+                    Text("You can add headwind direction and other fields to your data pages in your profile settings.")
 
                     Spacer(Modifier.padding(10.dp))
 

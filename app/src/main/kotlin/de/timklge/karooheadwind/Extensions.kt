@@ -1,12 +1,12 @@
-package de.timklge.karoowinddir
+package de.timklge.karooheadwind
 
 import android.content.Context
 import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import de.timklge.karoowinddir.datatypes.GpsCoordinates
-import de.timklge.karoowinddir.screens.WinddirSettings
-import de.timklge.karoowinddir.screens.WinddirStats
+import de.timklge.karooheadwind.datatypes.GpsCoordinates
+import de.timklge.karooheadwind.screens.HeadwindSettings
+import de.timklge.karooheadwind.screens.HeadwindStats
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.models.DataType
 import io.hammerhead.karooext.models.HttpResponseState
@@ -42,13 +42,13 @@ val settingsKey = stringPreferencesKey("settings")
 val currentDataKey = stringPreferencesKey("current")
 val statsKey = stringPreferencesKey("stats")
 
-suspend fun saveSettings(context: Context, settings: WinddirSettings) {
+suspend fun saveSettings(context: Context, settings: HeadwindSettings) {
     context.dataStore.edit { t ->
         t[settingsKey] = Json.encodeToString(settings)
     }
 }
 
-suspend fun saveStats(context: Context, stats: WinddirStats) {
+suspend fun saveStats(context: Context, stats: HeadwindStats) {
     context.dataStore.edit { t ->
         t[statsKey] = Json.encodeToString(stats)
     }
@@ -77,45 +77,45 @@ fun Context.streamCurrentWeatherData(): Flow<OpenMeteoCurrentWeatherResponse> {
             val data = settingsJson[currentDataKey]
             data?.let { d -> jsonWithUnknownKeys.decodeFromString<OpenMeteoCurrentWeatherResponse>(d) }
         } catch (e: Throwable) {
-            Log.e(KarooWinddirExtension.TAG, "Failed to read preferences", e)
+            Log.e(KarooHeadwindExtension.TAG, "Failed to read preferences", e)
             null
         }
     }.filterNotNull().distinctUntilChanged().filter { it.current.time * 1000 >= System.currentTimeMillis() - (1000 * 60 * 60 * 12) }
 }
 
-fun Context.streamSettings(): Flow<WinddirSettings> {
+fun Context.streamSettings(): Flow<HeadwindSettings> {
     return dataStore.data.map { settingsJson ->
         try {
-            jsonWithUnknownKeys.decodeFromString<WinddirSettings>(
-                settingsJson[settingsKey] ?: WinddirSettings.defaultSettings
+            jsonWithUnknownKeys.decodeFromString<HeadwindSettings>(
+                settingsJson[settingsKey] ?: HeadwindSettings.defaultSettings
             )
         } catch(e: Throwable){
-            Log.e(KarooWinddirExtension.TAG, "Failed to read preferences", e)
-            jsonWithUnknownKeys.decodeFromString<WinddirSettings>(WinddirSettings.defaultSettings)
+            Log.e(KarooHeadwindExtension.TAG, "Failed to read preferences", e)
+            jsonWithUnknownKeys.decodeFromString<HeadwindSettings>(HeadwindSettings.defaultSettings)
         }
     }.distinctUntilChanged()
 }
 
-fun Context.streamStats(): Flow<WinddirStats> {
+fun Context.streamStats(): Flow<HeadwindStats> {
     return dataStore.data.map { statsJson ->
         try {
-            jsonWithUnknownKeys.decodeFromString<WinddirStats>(
-                statsJson[statsKey] ?: WinddirStats.defaultStats
+            jsonWithUnknownKeys.decodeFromString<HeadwindStats>(
+                statsJson[statsKey] ?: HeadwindStats.defaultStats
             )
         } catch(e: Throwable){
-            Log.e(KarooWinddirExtension.TAG, "Failed to read stats", e)
-            jsonWithUnknownKeys.decodeFromString<WinddirStats>(WinddirStats.defaultStats)
+            Log.e(KarooHeadwindExtension.TAG, "Failed to read stats", e)
+            jsonWithUnknownKeys.decodeFromString<HeadwindStats>(HeadwindStats.defaultStats)
         }
     }.distinctUntilChanged()
 }
 
 @OptIn(FlowPreview::class)
-suspend fun KarooSystemService.makeOpenMeteoHttpRequest(gpsCoordinates: GpsCoordinates, settings: WinddirSettings): HttpResponseState.Complete {
+suspend fun KarooSystemService.makeOpenMeteoHttpRequest(gpsCoordinates: GpsCoordinates, settings: HeadwindSettings): HttpResponseState.Complete {
     return callbackFlow {
         // https://open-meteo.com/en/docs#current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=&daily=&location_mode=csv_coordinates&timeformat=unixtime&forecast_days=3
         val url = "https://api.open-meteo.com/v1/forecast?latitude=${gpsCoordinates.lat}&longitude=${gpsCoordinates.lon}&current=weather_code,temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure&timeformat=unixtime&wind_speed_unit=${settings.windUnit.id}&precipitation_unit=${settings.precipitationUnit.id}"
 
-        Log.d(KarooWinddirExtension.TAG, "Http request to ${url}...")
+        Log.d(KarooHeadwindExtension.TAG, "Http request to ${url}...")
 
         val listenerId = addConsumer(
             OnHttpResponse.MakeHttpRequest(
@@ -124,7 +124,7 @@ suspend fun KarooSystemService.makeOpenMeteoHttpRequest(gpsCoordinates: GpsCoord
                 waitForConnection = false,
             ),
         ) { event: OnHttpResponse ->
-            Log.d(KarooWinddirExtension.TAG, "Http response event $event")
+            Log.d(KarooHeadwindExtension.TAG, "Http response event $event")
             if (event.state is HttpResponseState.Complete){
                 trySend(event.state as HttpResponseState.Complete)
                 close()
@@ -162,10 +162,10 @@ fun KarooSystemService.getGpsCoordinateFlow(): Flow<GpsCoordinates> {
             val lon = values[DataType.Field.LOC_LONGITUDE]
 
             if (lat != null && lon != null){
-                Log.d(KarooWinddirExtension.TAG, "Updated gps coords: $lat $lon")
+                Log.d(KarooHeadwindExtension.TAG, "Updated gps coords: $lat $lon")
                 GpsCoordinates(lat, lon)
             } else {
-                Log.e(KarooWinddirExtension.TAG, "Missing gps values: $values")
+                Log.e(KarooHeadwindExtension.TAG, "Missing gps values: $values")
                 null
             }
         }

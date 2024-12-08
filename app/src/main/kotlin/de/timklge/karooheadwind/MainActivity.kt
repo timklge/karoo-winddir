@@ -1,4 +1,4 @@
-package de.timklge.karoowinddir
+package de.timklge.karooheadwind
 
 import android.content.Context
 import android.os.Bundle
@@ -8,8 +8,8 @@ import androidx.compose.material3.Text
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import de.timklge.karoowinddir.screens.MainScreen
-import de.timklge.karoowinddir.theme.AppTheme
+import de.timklge.karooheadwind.screens.MainScreen
+import de.timklge.karooheadwind.theme.AppTheme
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 

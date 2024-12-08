@@ -6,15 +6,15 @@ plugins {
 }
 
 android {
-    namespace = "de.timklge.karoowinddir"
+    namespace = "de.timklge.karooheadwind"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "de.timklge.karoowinddir"
+        applicationId = "de.timklge.karooheadwind"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0-beta1"
+        versionCode = 2
+        versionName = "1.0.0-beta2"
     }
 
     buildTypes {

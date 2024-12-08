@@ -1,4 +1,4 @@
-package de.timklge.karoowinddir.datatypes
+package de.timklge.karooheadwind.datatypes
 
 import android.content.Context
 import android.util.Log
@@ -16,9 +16,9 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.text.FontFamily
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import de.timklge.karoowinddir.KarooWinddirExtension
-import de.timklge.karoowinddir.OpenMeteoCurrentWeatherResponse
-import de.timklge.karoowinddir.streamDataFlow
+import de.timklge.karooheadwind.KarooHeadwindExtension
+import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
+import de.timklge.karooheadwind.streamDataFlow
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.internal.ViewEmitter
 import io.hammerhead.karooext.models.StreamState
@@ -66,7 +66,7 @@ class WindDirectionDataType(val karooSystem: KarooSystemService, context: Contex
                     7 -> "NW"
                     else -> "N/A"
                 }
-                Log.d( KarooWinddirExtension.TAG,"Updating wind direction view")
+                Log.d( KarooHeadwindExtension.TAG,"Updating wind direction view")
                 val result = glance.compose(context, DpSize.Unspecified) {
                     Box(modifier = GlanceModifier.fillMaxSize(),
                         contentAlignment = Alignment(

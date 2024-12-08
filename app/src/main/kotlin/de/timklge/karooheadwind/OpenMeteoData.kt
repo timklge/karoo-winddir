@@ -1,4 +1,4 @@
-package de.timklge.karoowinddir
+package de.timklge.karooheadwind
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

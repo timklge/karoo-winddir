@@ -1,4 +1,4 @@
-package de.timklge.karoowinddir.datatypes
+package de.timklge.karooheadwind.datatypes
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -15,18 +15,15 @@ import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
 import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
-import androidx.glance.layout.padding
 import androidx.glance.layout.width
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
 import androidx.glance.text.FontFamily
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import de.timklge.karoowinddir.R
-import de.timklge.karoowinddir.WeatherInterpretation
-import de.timklge.karoowinddir.screens.WinddirSettings
+import de.timklge.karooheadwind.R
+import de.timklge.karooheadwind.WeatherInterpretation
 
 fun getWeatherIcon(interpretation: WeatherInterpretation): Int {
     return when (interpretation){

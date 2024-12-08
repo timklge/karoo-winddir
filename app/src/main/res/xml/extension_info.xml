@@ -2,14 +2,14 @@
 <ExtensionInfo
     displayName="@string/extension_name"
     icon="@drawable/ic_launcher"
-    id="karoo-winddir"
+    id="karoo-headwind"
     scansDevices="false">
     <DataType
-        description="@string/winddir_description"
-        displayName="@string/winddir"
+        description="@string/headwind_description"
+        displayName="@string/headwind"
         graphical="true"
         icon="@drawable/ic_launcher"
-        typeId="winddir" />
+        typeId="headwind" />
 
     <DataType
         description="@string/weather_description"

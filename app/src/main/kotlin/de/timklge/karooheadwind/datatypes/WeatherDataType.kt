@@ -1,17 +1,17 @@
-package de.timklge.karoowinddir.datatypes
+package de.timklge.karooheadwind.datatypes
 
 import android.content.Context
 import android.util.Log
 import androidx.compose.ui.unit.DpSize
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
-import de.timklge.karoowinddir.KarooWinddirExtension
-import de.timklge.karoowinddir.OpenMeteoCurrentWeatherResponse
-import de.timklge.karoowinddir.WeatherInterpretation
-import de.timklge.karoowinddir.getHeadingFlow
-import de.timklge.karoowinddir.screens.WinddirSettings
-import de.timklge.karoowinddir.streamCurrentWeatherData
-import de.timklge.karoowinddir.streamSettings
+import de.timklge.karooheadwind.KarooHeadwindExtension
+import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
+import de.timklge.karooheadwind.WeatherInterpretation
+import de.timklge.karooheadwind.getHeadingFlow
+import de.timklge.karooheadwind.screens.HeadwindSettings
+import de.timklge.karooheadwind.streamCurrentWeatherData
+import de.timklge.karooheadwind.streamSettings
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.internal.Emitter
@@ -34,7 +34,7 @@ import kotlin.math.roundToInt
 class WeatherDataType(
     private val karooSystem: KarooSystemService,
     private val applicationContext: Context
-) : DataTypeImpl("karoo-winddir", "weather") {
+) : DataTypeImpl("karoo-headwind", "weather") {
     private val glance = GlanceRemoteViews()
 
     // FIXME: Remove. Currently, the data field will permanently show "no sensor" if no data stream is provided
@@ -44,7 +44,7 @@ class WeatherDataType(
 
             currentWeatherData
                 .collect { data ->
-                    Log.d(KarooWinddirExtension.TAG, "Wind code: ${data.current.weatherCode}")
+                    Log.d(KarooHeadwindExtension.TAG, "Wind code: ${data.current.weatherCode}")
                     emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to data.current.weatherCode.toDouble()))))
                 }
         }
@@ -54,13 +54,13 @@ class WeatherDataType(
     }
 
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
-        Log.d(KarooWinddirExtension.TAG, "Starting weather view with $emitter")
+        Log.d(KarooHeadwindExtension.TAG, "Starting weather view with $emitter")
         val configJob = CoroutineScope(Dispatchers.IO).launch {
             emitter.onNext(UpdateGraphicConfig(showHeader = false))
             awaitCancellation()
         }
 
-        data class StreamData(val data: OpenMeteoCurrentWeatherResponse, val settings: WinddirSettings)
+        data class StreamData(val data: OpenMeteoCurrentWeatherResponse, val settings: HeadwindSettings)
 
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
             context.streamCurrentWeatherData()
@@ -71,7 +71,7 @@ class WeatherDataType(
                     emitter.updateView(result.remoteViews)
                 }
                 .collect { (data, settings) ->
-                    Log.d(KarooWinddirExtension.TAG, "Updating weather view")
+                    Log.d(KarooHeadwindExtension.TAG, "Updating weather view")
                     val interpretation = WeatherInterpretation.fromWeatherCode(data.current.weatherCode)
 
                     val result = glance.compose(context, DpSize.Unspecified) {
@@ -82,7 +82,7 @@ class WeatherDataType(
                 }
         }
         emitter.setCancellable {
-            Log.d(KarooWinddirExtension.TAG, "Stopping winddir view with $emitter")
+            Log.d(KarooHeadwindExtension.TAG, "Stopping headwind view with $emitter")
             configJob.cancel()
             viewJob.cancel()
         }

@@ -1,4 +1,4 @@
-package de.timklge.karoowinddir.screens
+package de.timklge.karooheadwind.screens
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem

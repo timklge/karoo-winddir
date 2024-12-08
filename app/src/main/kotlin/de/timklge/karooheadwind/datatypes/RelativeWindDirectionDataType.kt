@@ -1,17 +1,17 @@
-package de.timklge.karoowinddir.datatypes
+package de.timklge.karooheadwind.datatypes
 
 import android.content.Context
 import android.util.Log
 import androidx.compose.ui.unit.DpSize
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
-import de.timklge.karoowinddir.KarooWinddirExtension
-import de.timklge.karoowinddir.OpenMeteoCurrentWeatherResponse
-import de.timklge.karoowinddir.getHeadingFlow
-import de.timklge.karoowinddir.screens.WinddirSettings
-import de.timklge.karoowinddir.streamCurrentWeatherData
-import de.timklge.karoowinddir.streamDataFlow
-import de.timklge.karoowinddir.streamSettings
+import de.timklge.karooheadwind.KarooHeadwindExtension
+import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
+import de.timklge.karooheadwind.getHeadingFlow
+import de.timklge.karooheadwind.screens.HeadwindSettings
+import de.timklge.karooheadwind.streamCurrentWeatherData
+import de.timklge.karooheadwind.streamDataFlow
+import de.timklge.karooheadwind.streamSettings
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.internal.Emitter
@@ -37,7 +37,7 @@ import kotlin.math.roundToInt
 class RelativeWindDirectionDataType(
     private val karooSystem: KarooSystemService,
     private val applicationContext: Context
-) : DataTypeImpl("karoo-winddir", "winddir") {
+) : DataTypeImpl("karoo-headwind", "headwind") {
     private val glance = GlanceRemoteViews()
 
     private fun signedAngleDifference(angle1: Double, angle2: Double): Double {
@@ -71,7 +71,7 @@ class RelativeWindDirectionDataType(
                     val windBearing = data.current.windDirection + 180
 
                     val diff = (signedAngleDifference(bearing, windBearing) + 360) % 360
-                    Log.d(KarooWinddirExtension.TAG, "Wind bearing: $bearing vs $windBearing => $diff")
+                    Log.d(KarooHeadwindExtension.TAG, "Wind bearing: $bearing vs $windBearing => $diff")
                     emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to diff))))
                 }
         }
@@ -81,13 +81,13 @@ class RelativeWindDirectionDataType(
     }
 
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
-        Log.d(KarooWinddirExtension.TAG, "Starting relative wind direction view with $emitter")
+        Log.d(KarooHeadwindExtension.TAG, "Starting headwind direction view with $emitter")
         val configJob = CoroutineScope(Dispatchers.IO).launch {
             emitter.onNext(UpdateGraphicConfig(showHeader = false))
             awaitCancellation()
         }
 
-        data class StreamData(val value: Double, val data: OpenMeteoCurrentWeatherResponse, val settings: WinddirSettings)
+        data class StreamData(val value: Double, val data: OpenMeteoCurrentWeatherResponse, val settings: HeadwindSettings)
 
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
             karooSystem.streamDataFlow(dataTypeId)
@@ -100,7 +100,7 @@ class RelativeWindDirectionDataType(
                     emitter.updateView(result.remoteViews)
                 }
                 .collect { streamData ->
-                    Log.d(KarooWinddirExtension.TAG, "Updating relative wind direction view")
+                    Log.d(KarooHeadwindExtension.TAG, "Updating headwind direction view")
                     val windSpeed = streamData.data.current.windSpeed
                     val windDirection = streamData.value
                     val headwindSpeed = cos( (windDirection + 180) * Math.PI / 180.0) * windSpeed
@@ -114,7 +114,7 @@ class RelativeWindDirectionDataType(
             }
         }
         emitter.setCancellable {
-            Log.d(KarooWinddirExtension.TAG, "Stopping winddir view with $emitter")
+            Log.d(KarooHeadwindExtension.TAG, "Stopping headwind view with $emitter")
             configJob.cancel()
             viewJob.cancel()
         }

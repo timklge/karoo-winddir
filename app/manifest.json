@@ -1,11 +1,11 @@
 {
-  "label": "karoo-winddir",
-  "packageName": "de.timklge.karoowinddir",
-  "iconUrl": "https://github.com/timklge/karoo-winddir/releases/latest/download/karoo-winddir.png",
-  "latestApkUrl": "https://github.com/timklge/karoo-winddir/releases/latest/download/app-release.apk",
-  "latestVersion": "1.0.0-beta1",
-  "latestVersionCode": 1,
+  "label": "karoo-headwind",
+  "packageName": "de.timklge.karooheadwind",
+  "iconUrl": "https://github.com/timklge/karoo-headwind/releases/latest/download/karoo-headwind.png",
+  "latestApkUrl": "https://github.com/timklge/karoo-headwind/releases/latest/download/app-release.apk",
+  "latestVersion": "1.0.0-beta2",
+  "latestVersionCode": 2,
   "developer": "timklge",
-  "description": "Provides relative wind direction, wind speed and other weather data fields",
+  "description": "Provides headwind direction, wind speed and other weather data fields",
   "releaseNotes": "Initial release"
 }

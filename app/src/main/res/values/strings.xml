@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">WindDir</string>
-    <string name="extension_name">winddir</string>
-    <string name="winddir">Wind direction</string>
-    <string name="winddir_description">Current wind direction relative to the riding direction</string>
+    <string name="extension_name">headwind</string>
+    <string name="headwind">Wind direction</string>
+    <string name="headwind_description">Current wind direction relative to the riding direction</string>
     <string name="relativeHumidity">Humidity</string>
     <string name="relativeHumidity_description">Relative humidity in percent</string>
     <string name="cloudCover">Cloud cover</string>
