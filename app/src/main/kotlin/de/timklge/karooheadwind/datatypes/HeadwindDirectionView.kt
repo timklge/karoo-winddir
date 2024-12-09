@@ -1,7 +1,15 @@
 package de.timklge.karooheadwind.datatypes
 
+import android.R
+import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
@@ -9,6 +17,7 @@ import androidx.glance.ColorFilter
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.LocalContext
 import androidx.glance.background
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
@@ -20,27 +29,45 @@ import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import de.timklge.karooheadwind.R
 import kotlin.math.roundToInt
 
-fun getArrowResourceByBearing(bearing: Int): Int {
-    val oclock = ((bearing % 360) / 30.0).roundToInt()
 
-    return when (oclock){
-        0 -> R.drawable.arrow_0
-        1 -> R.drawable.arrow_1
-        2 -> R.drawable.arrow_2
-        3 -> R.drawable.arrow_3
-        4 -> R.drawable.arrow_4
-        5 -> R.drawable.arrow_5
-        6 -> R.drawable.arrow_6
-        7 -> R.drawable.arrow_7
-        8 -> R.drawable.arrow_8
-        9 -> R.drawable.arrow_9
-        10 -> R.drawable.arrow_10
-        11 -> R.drawable.arrow_11
-        12 -> R.drawable.arrow_0
-        else -> error("Bearing $bearing out of range")
+val bitmapsByBearing = mutableMapOf<Int, Bitmap>()
+
+fun getArrowBitmapByBearing(bearing: Int): Bitmap {
+    synchronized(bitmapsByBearing) {
+        val bearingRounded = (((bearing + 360) / 5.0).roundToInt() * 5) % 360
+
+        val storedBitmap = bitmapsByBearing[bearingRounded]
+        if (storedBitmap != null) return storedBitmap
+
+        val bitmap = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        val paint = Paint().apply {
+            color = android.graphics.Color.WHITE
+            style = Paint.Style.STROKE
+            strokeWidth = 15f
+            isAntiAlias = true
+        }
+
+        val path = Path().apply {
+            moveTo(64f, 0f) // Top point of the arrow
+            lineTo(128f, 128f) // Bottom right point of the arrow
+            lineTo(64f, 96f) // Middle bottom point of the arrow
+            lineTo(0f, 128f) // Bottom left point of the arrow
+            close() // Close the path to form the arrow shape
+        }
+
+        canvas.save()
+        canvas.rotate(bearing.toFloat(), 64f, 64f) // Rotate the canvas based on the bearing
+        canvas.scale(0.75f, 0.75f, 64f, 64f) // Scale the arrow down to fit the canvas
+        canvas.drawPath(path, paint)
+        canvas.restore()
+
+        bitmapsByBearing[bearingRounded] = bitmap
+
+        return bitmap
     }
 }
 
@@ -57,7 +84,7 @@ fun HeadwindDirection(bearing: Int, fontSize: Int, overlayText: String? = null) 
     ) {
         Image(
                 modifier = GlanceModifier.fillMaxSize(),
-                provider = ImageProvider(getArrowResourceByBearing(bearing)),
+                provider = ImageProvider(getArrowBitmapByBearing(bearing)),
                 contentDescription = "Relative wind direction indicator",
                 contentScale = ContentScale.Fit,
                 colorFilter = ColorFilter.tint(ColorProvider(Color.Black, Color.White))

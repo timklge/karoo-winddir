@@ -7,7 +7,6 @@ import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
 import de.timklge.karooheadwind.KarooHeadwindExtension
 import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
-import de.timklge.karooheadwind.getHeadingFlow
 import de.timklge.karooheadwind.getRelativeHeadingFlow
 import de.timklge.karooheadwind.screens.HeadwindSettings
 import de.timklge.karooheadwind.streamCurrentWeatherData

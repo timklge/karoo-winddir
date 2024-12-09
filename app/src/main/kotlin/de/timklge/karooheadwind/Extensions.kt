@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.timeout
 import kotlinx.coroutines.time.debounce
@@ -167,24 +168,36 @@ fun KarooSystemService.getRelativeHeadingFlow(context: Context): Flow<Double> {
 
     return getHeadingFlow()
         .filter { it >= 0 }
-        .combine(currentWeatherData) { cardinalDirection, data -> cardinalDirection to data }
-        .map { (cardinalDirection, data) ->
-            val bearing = cardinalDirection * 45.0
+        .combine(currentWeatherData) { bearing, data -> bearing to data }
+        .map { (bearing, data) ->
             val windBearing = data.current.windDirection + 180
-            val diff = (signedAngleDifference(bearing, windBearing) + 360) % 360
+            val diff = signedAngleDifference(bearing, windBearing)
             Log.d(KarooHeadwindExtension.TAG, "Wind bearing: $bearing vs $windBearing => $diff")
 
             diff
         }
 }
 
-fun KarooSystemService.getHeadingFlow(): Flow<Int> {
-    // return flowOf(2)
+fun Double.lerp(target: Double, alpha: Double): Double {
+    return this + (target - this) * alpha
+}
 
-    return streamDataFlow(DataType.Type.HEADING)
-        .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue }
-        .map { it.roundToInt() }
+fun KarooSystemService.getHeadingFlow(): Flow<Double> {
+    //return flowOf(20.0)
+
+    return streamDataFlow("TYPE_LOCATION_ID")
+        .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.values }
+        .map { values ->
+            val heading = values[DataType.Field.LOC_BEARING]
+
+            heading ?: 0.0
+        }
         .distinctUntilChanged()
+        .scan(emptyList<Double>()) { acc, value ->
+            val newAcc = acc + value
+            if (newAcc.size > 3) newAcc.drop(1) else newAcc
+        }
+        .map { it.average() }
 }
 
 @OptIn(FlowPreview::class)

@@ -9,6 +9,7 @@ import androidx.glance.ColorFilter
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.LocalContext
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
@@ -57,7 +58,7 @@ fun Weather(current: WeatherInterpretation, windBearing: Int, windSpeed: Int, wi
         Row(horizontalAlignment = Alignment.CenterHorizontally, verticalAlignment = Alignment.CenterVertically) {
             Image(
                 modifier = GlanceModifier.height(20.dp).width(12.dp),
-                provider = ImageProvider(getArrowResourceByBearing(windBearing)),
+                provider = ImageProvider(getArrowBitmapByBearing(windBearing)),
                 contentDescription = "Current wind direction",
                 contentScale = ContentScale.Fit,
                 colorFilter = ColorFilter.tint(ColorProvider(Color.Black, Color.White))

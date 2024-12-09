@@ -8,7 +8,6 @@ import androidx.glance.appwidget.GlanceRemoteViews
 import de.timklge.karooheadwind.KarooHeadwindExtension
 import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
 import de.timklge.karooheadwind.WeatherInterpretation
-import de.timklge.karooheadwind.getHeadingFlow
 import de.timklge.karooheadwind.screens.HeadwindSettings
 import de.timklge.karooheadwind.streamCurrentWeatherData
 import de.timklge.karooheadwind.streamSettings
@@ -25,7 +24,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
