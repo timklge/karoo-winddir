@@ -1,5 +1,6 @@
 package de.timklge.karooheadwind.datatypes
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
@@ -41,7 +42,7 @@ fun getWeatherIcon(interpretation: WeatherInterpretation): Int {
 @OptIn(ExperimentalGlancePreviewApi::class)
 @Preview(widthDp = 200, heightDp = 150)
 @Composable
-fun Weather(current: WeatherInterpretation, windBearing: Int, windSpeed: Int, windGusts: Int) {
+fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int, windSpeed: Int, windGusts: Int) {
     Column(modifier = GlanceModifier.fillMaxSize(), horizontalAlignment = Alignment.End) {
         Row(modifier = GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.End) {
             val imageW = 70
@@ -58,7 +59,7 @@ fun Weather(current: WeatherInterpretation, windBearing: Int, windSpeed: Int, wi
         Row(horizontalAlignment = Alignment.CenterHorizontally, verticalAlignment = Alignment.CenterVertically) {
             Image(
                 modifier = GlanceModifier.height(20.dp).width(12.dp),
-                provider = ImageProvider(getArrowBitmapByBearing(windBearing)),
+                provider = ImageProvider(getArrowBitmapByBearing(baseBitmap, windBearing)),
                 contentDescription = "Current wind direction",
                 contentScale = ContentScale.Fit,
                 colorFilter = ColorFilter.tint(ColorProvider(Color.Black, Color.White))

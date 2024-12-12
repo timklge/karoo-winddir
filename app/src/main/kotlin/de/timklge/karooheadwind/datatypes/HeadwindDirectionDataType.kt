@@ -1,6 +1,7 @@
 package de.timklge.karooheadwind.datatypes
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.ui.unit.DpSize
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
@@ -54,6 +55,12 @@ class HeadwindDirectionDataType(
 
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
         Log.d(KarooHeadwindExtension.TAG, "Starting headwind direction view with $emitter")
+
+        val baseBitmap = BitmapFactory.decodeResource(
+            context.resources,
+            de.timklge.karooheadwind.R.drawable.arrow
+        )
+
         val configJob = CoroutineScope(Dispatchers.IO).launch {
             emitter.onNext(UpdateGraphicConfig(showHeader = false))
             awaitCancellation()
@@ -76,10 +83,10 @@ class HeadwindDirectionDataType(
                     val windSpeed = streamData.data.current.windSpeed
                     val windDirection = streamData.value
                     val headwindSpeed = cos( (windDirection + 180) * Math.PI / 180.0) * windSpeed
-                    val windSpeedText = if(streamData.settings.showWindspeedOverlay) "${headwindSpeed.roundToInt()}" else null
+                    val windSpeedText = "${headwindSpeed.roundToInt()}"
 
                     val result = glance.compose(context, DpSize.Unspecified) {
-                        HeadwindDirection(windDirection.roundToInt(), config.textSize, windSpeedText)
+                        HeadwindDirection(baseBitmap, windDirection.roundToInt(), config.textSize, windSpeedText)
                     }
 
                     emitter.updateView(result.remoteViews)

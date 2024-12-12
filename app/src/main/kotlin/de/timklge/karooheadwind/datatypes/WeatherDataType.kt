@@ -1,6 +1,7 @@
 package de.timklge.karooheadwind.datatypes
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.ui.unit.DpSize
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
@@ -58,6 +59,11 @@ class WeatherDataType(
             awaitCancellation()
         }
 
+        val baseBitmap = BitmapFactory.decodeResource(
+            context.resources,
+            de.timklge.karooheadwind.R.drawable.arrow_0
+        )
+
         data class StreamData(val data: OpenMeteoCurrentWeatherResponse, val settings: HeadwindSettings)
 
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
@@ -73,7 +79,7 @@ class WeatherDataType(
                     val interpretation = WeatherInterpretation.fromWeatherCode(data.current.weatherCode)
 
                     val result = glance.compose(context, DpSize.Unspecified) {
-                        Weather(interpretation, data.current.windDirection.roundToInt(), data.current.windSpeed.roundToInt(), data.current.windGusts.roundToInt())
+                        Weather(baseBitmap, interpretation, data.current.windDirection.roundToInt(), data.current.windSpeed.roundToInt(), data.current.windGusts.roundToInt())
                     }
 
                     emitter.updateView(result.remoteViews)
