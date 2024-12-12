@@ -3,7 +3,6 @@ package de.timklge.karooheadwind.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -31,7 +29,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -68,7 +65,6 @@ data class HeadwindSettings(
     val windUnit: WindUnit = WindUnit.KILOMETERS_PER_HOUR,
     val precipitationUnit: PrecipitationUnit = PrecipitationUnit.MILLIMETERS,
     val welcomeDialogAccepted: Boolean = false,
-    val showWindspeedOverlay: Boolean = true
 ){
     companion object {
         val defaultSettings = Json.encodeToString(HeadwindSettings())
@@ -97,7 +93,6 @@ fun MainScreen() {
     var selectedWindUnit by remember { mutableStateOf(WindUnit.KILOMETERS_PER_HOUR) }
     var selectedPrecipitationUnit by remember { mutableStateOf(PrecipitationUnit.MILLIMETERS) }
     var welcomeDialogVisible by remember { mutableStateOf(false) }
-    var showWindspeedOverlay by remember { mutableStateOf(false) }
 
     val stats by ctx.streamStats().collectAsState(HeadwindStats())
     val location by karooSystem.getGpsCoordinateFlow().collectAsState(initial = null)
@@ -109,7 +104,6 @@ fun MainScreen() {
             selectedWindUnit = settings.windUnit
             selectedPrecipitationUnit = settings.precipitationUnit
             welcomeDialogVisible = !settings.welcomeDialogAccepted
-            showWindspeedOverlay = settings.showWindspeedOverlay
         }
     }
 
@@ -140,16 +134,10 @@ fun MainScreen() {
                 selectedPrecipitationUnit = PrecipitationUnit.entries.find { unit -> unit.id == selectedOption.id }!!
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Switch(checked = showWindspeedOverlay, onCheckedChange = { showWindspeedOverlay = it})
-                Spacer(modifier = Modifier.width(10.dp))
-                Text("Show headwind speed on arrow")
-            }
-
             FilledTonalButton(modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp), onClick = {
-                    val newSettings = HeadwindSettings(windUnit = selectedWindUnit, precipitationUnit = selectedPrecipitationUnit, welcomeDialogAccepted = true, showWindspeedOverlay = showWindspeedOverlay)
+                    val newSettings = HeadwindSettings(windUnit = selectedWindUnit, precipitationUnit = selectedPrecipitationUnit, welcomeDialogAccepted = true)
 
                     coroutineScope.launch {
                         saveSettings(ctx, newSettings)
