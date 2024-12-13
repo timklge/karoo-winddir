@@ -27,6 +27,11 @@ import io.hammerhead.karooext.models.ViewConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -39,6 +44,15 @@ class WindDirectionDataType(val karooSystem: KarooSystemService, context: Contex
         return data.current.windDirection
     }
 
+    private fun previewFlow(): Flow<Double> {
+        return flow {
+            while (true) {
+                emit((0..360).random().toDouble())
+                delay(1_000)
+            }
+        }
+    }
+
     @OptIn(ExperimentalGlanceRemoteViewsApi::class)
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
         val configJob = CoroutineScope(Dispatchers.IO).launch {
@@ -47,37 +61,47 @@ class WindDirectionDataType(val karooSystem: KarooSystemService, context: Contex
         }
 
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
-            karooSystem.streamDataFlow(dataTypeId)
+            val flow = if (config.preview){
+                previewFlow()
+            } else {
+                karooSystem.streamDataFlow(dataTypeId)
+                    .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue ?: 0.0 }
+            }
+
+            flow
                 .onCompletion {
                     val result = glance.compose(context, DpSize.Unspecified) { }
                     emitter.updateView(result.remoteViews)
                 }
-                .collect {
-                val windBearing = (it as? StreamState.Streaming)?.dataPoint?.singleValue?.toInt() ?: 0
-                val windCardinalDirection = ((windBearing % 360) / 45.0).roundToInt() % 8
-                val text = when(windCardinalDirection){
-                    0 -> "N"
-                    1 -> "NE"
-                    2 -> "E"
-                    3 -> "SE"
-                    4 -> "S"
-                    5 -> "SW"
-                    6 -> "W"
-                    7 -> "NW"
-                    else -> "N/A"
-                }
-                Log.d( KarooHeadwindExtension.TAG,"Updating wind direction view")
-                val result = glance.compose(context, DpSize.Unspecified) {
-                    Box(modifier = GlanceModifier.fillMaxSize(),
-                        contentAlignment = Alignment(
-                            vertical = Alignment.Vertical.Top,
-                            horizontal = Alignment.Horizontal.End,
-                        )) {
-                        Text(text, style = TextStyle(color = ColorProvider(Color.Black, Color.White), fontFamily = FontFamily.Monospace, fontSize = TextUnit(
-                            config.textSize.toFloat(), TextUnitType.Sp) /* FIXME: Read data field alignment config, karoo-ext #10 */))
+                .collect { windBearing ->
+                    val windCardinalDirection = ((windBearing % 360) / 45.0).roundToInt() % 8
+                    val text = when(windCardinalDirection){
+                        0 -> "N"
+                        1 -> "NE"
+                        2 -> "E"
+                        3 -> "SE"
+                        4 -> "S"
+                        5 -> "SW"
+                        6 -> "W"
+                        7 -> "NW"
+                        else -> "N/A"
                     }
-                }
-                emitter.updateView(result.remoteViews)
+                    Log.d( KarooHeadwindExtension.TAG,"Updating wind direction view")
+                    val result = glance.compose(context, DpSize.Unspecified) {
+                        Box(modifier = GlanceModifier.fillMaxSize(),
+                            contentAlignment = Alignment(
+                                vertical = Alignment.Vertical.Top,
+                                horizontal = when(config.alignment){
+                                    ViewConfig.Alignment.LEFT -> Alignment.Horizontal.Start
+                                    ViewConfig.Alignment.CENTER -> Alignment.Horizontal.CenterHorizontally
+                                    ViewConfig.Alignment.RIGHT -> Alignment.Horizontal.End
+                                },
+                            )) {
+                            Text(text, style = TextStyle(color = ColorProvider(Color.Black, Color.White), fontFamily = FontFamily.Monospace, fontSize = TextUnit(
+                                config.textSize.toFloat(), TextUnitType.Sp)))
+                        }
+                    }
+                    emitter.updateView(result.remoteViews)
             }
         }
 

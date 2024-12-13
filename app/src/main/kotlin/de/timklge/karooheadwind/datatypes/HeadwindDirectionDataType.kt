@@ -8,6 +8,7 @@ import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
 import de.timklge.karooheadwind.KarooHeadwindExtension
 import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
+import de.timklge.karooheadwind.OpenMeteoData
 import de.timklge.karooheadwind.getRelativeHeadingFlow
 import de.timklge.karooheadwind.screens.HeadwindSettings
 import de.timklge.karooheadwind.streamCurrentWeatherData
@@ -25,8 +26,11 @@ import io.hammerhead.karooext.models.ViewConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
@@ -53,6 +57,21 @@ class HeadwindDirectionDataType(
         }
     }
 
+    data class StreamData(val value: Double, val windSpeed: Double, val settings: HeadwindSettings)
+
+    private fun previewFlow(): Flow<StreamData> {
+        return flow {
+            while (true) {
+                val bearing = (0..360).random().toDouble()
+                val windSpeed = (-20..20).random()
+
+                emit(StreamData(bearing, windSpeed.toDouble(), HeadwindSettings()))
+                delay(2_000)
+            }
+        }
+    }
+
+
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
         Log.d(KarooHeadwindExtension.TAG, "Starting headwind direction view with $emitter")
 
@@ -66,21 +85,26 @@ class HeadwindDirectionDataType(
             awaitCancellation()
         }
 
-        data class StreamData(val value: Double, val data: OpenMeteoCurrentWeatherResponse, val settings: HeadwindSettings)
-
-        val viewJob = CoroutineScope(Dispatchers.IO).launch {
+        val flow = if (config.preview) {
+            previewFlow()
+        } else {
             karooSystem.streamDataFlow(dataTypeId)
                 .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue }
                 .combine(context.streamCurrentWeatherData()) { value, data -> value to data }
-                .combine(context.streamSettings(karooSystem)) { (value, data), settings -> StreamData(value, data, settings) }
-                .onCompletion {
+                .combine(context.streamSettings(karooSystem)) { (value, data), settings ->
+                    StreamData(value, data.current.windSpeed, settings)
+                }
+        }
+
+        val viewJob = CoroutineScope(Dispatchers.IO).launch {
+            flow.onCompletion {
                     // Clear view on completion
                     val result = glance.compose(context, DpSize.Unspecified) { }
                     emitter.updateView(result.remoteViews)
                 }
                 .collect { streamData ->
                     Log.d(KarooHeadwindExtension.TAG, "Updating headwind direction view")
-                    val windSpeed = streamData.data.current.windSpeed
+                    val windSpeed = streamData.windSpeed
                     val windDirection = streamData.value
                     val headwindSpeed = cos( (windDirection + 180) * Math.PI / 180.0) * windSpeed
                     val windSpeedText = headwindSpeed.roundToInt().toString()
