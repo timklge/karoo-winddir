@@ -11,6 +11,7 @@ import de.timklge.karooheadwind.datatypes.WindGustsDataType
 import de.timklge.karooheadwind.datatypes.HeadwindSpeedDataType
 import de.timklge.karooheadwind.datatypes.HeadwindDirectionDataType
 import de.timklge.karooheadwind.datatypes.WeatherDataType
+import de.timklge.karooheadwind.datatypes.WindSpeedDataType
 import de.timklge.karooheadwind.screens.HeadwindStats
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.KarooExtension
@@ -47,6 +48,7 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.0.0-beta2") {
             RelativeHumidityDataType(applicationContext),
             CloudCoverDataType(applicationContext),
             WindGustsDataType(applicationContext),
+            WindSpeedDataType(applicationContext),
             WindDirectionDataType(karooSystem, applicationContext),
             PrecipitationDataType(applicationContext),
             SurfacePressureDataType(applicationContext)
