@@ -7,12 +7,15 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import de.timklge.karooheadwind.datatypes.GpsCoordinates
 import de.timklge.karooheadwind.screens.HeadwindSettings
 import de.timklge.karooheadwind.screens.HeadwindStats
+import de.timklge.karooheadwind.screens.PrecipitationUnit
+import de.timklge.karooheadwind.screens.WindUnit
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.models.DataType
 import io.hammerhead.karooext.models.HttpResponseState
 import io.hammerhead.karooext.models.OnHttpResponse
 import io.hammerhead.karooext.models.OnStreamState
 import io.hammerhead.karooext.models.StreamState
+import io.hammerhead.karooext.models.UserProfile
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.awaitClose
@@ -24,6 +27,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -86,12 +90,22 @@ fun Context.streamCurrentWeatherData(): Flow<OpenMeteoCurrentWeatherResponse> {
     }.filterNotNull().distinctUntilChanged().filter { it.current.time * 1000 >= System.currentTimeMillis() - (1000 * 60 * 60 * 12) }
 }
 
-fun Context.streamSettings(): Flow<HeadwindSettings> {
+fun Context.streamSettings(karooSystemService: KarooSystemService): Flow<HeadwindSettings> {
     return dataStore.data.map { settingsJson ->
         try {
-            jsonWithUnknownKeys.decodeFromString<HeadwindSettings>(
-                settingsJson[settingsKey] ?: HeadwindSettings.defaultSettings
-            )
+            if (settingsJson.contains(settingsKey)){
+                jsonWithUnknownKeys.decodeFromString<HeadwindSettings>(settingsJson[settingsKey]!!)
+            } else {
+                val defaultSettings = jsonWithUnknownKeys.decodeFromString<HeadwindSettings>(HeadwindSettings.defaultSettings)
+
+                val preferredUnits = karooSystemService.streamUserProfile().first().preferredUnit
+                val preferredMetric = preferredUnits.distance == UserProfile.PreferredUnit.UnitType.METRIC
+
+                defaultSettings.copy(
+                    windUnit = if (preferredMetric) WindUnit.KILOMETERS_PER_HOUR else WindUnit.MILES_PER_HOUR,
+                    precipitationUnit = if (preferredMetric) PrecipitationUnit.MILLIMETERS else PrecipitationUnit.INCH
+                )
+            }
         } catch(e: Throwable){
             Log.e(KarooHeadwindExtension.TAG, "Failed to read preferences", e)
             jsonWithUnknownKeys.decodeFromString<HeadwindSettings>(HeadwindSettings.defaultSettings)
@@ -110,6 +124,17 @@ fun Context.streamStats(): Flow<HeadwindStats> {
             jsonWithUnknownKeys.decodeFromString<HeadwindStats>(HeadwindStats.defaultStats)
         }
     }.distinctUntilChanged()
+}
+
+fun KarooSystemService.streamUserProfile(): Flow<UserProfile> {
+    return callbackFlow {
+        val listenerId = addConsumer { userProfile: UserProfile ->
+            trySendBlocking(userProfile)
+        }
+        awaitClose {
+            removeConsumer(listenerId)
+        }
+    }
 }
 
 @OptIn(FlowPreview::class)

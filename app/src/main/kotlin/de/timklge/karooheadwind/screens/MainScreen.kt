@@ -100,7 +100,7 @@ fun MainScreen() {
     var savedDialogVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        ctx.streamSettings().collect { settings ->
+        ctx.streamSettings(karooSystem).collect { settings ->
             selectedWindUnit = settings.windUnit
             selectedPrecipitationUnit = settings.precipitationUnit
             welcomeDialogVisible = !settings.welcomeDialogAccepted
@@ -123,14 +123,18 @@ fun MainScreen() {
             .fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
 
             val windSpeedUnitDropdownOptions = WindUnit.entries.toList().map { unit -> DropdownOption(unit.id, unit.label) }
-            val windSpeedUnitInitialSelection = windSpeedUnitDropdownOptions.find { option -> option.id == selectedWindUnit.id }!!
-            Dropdown(label = "Wind Speed Unit", options = windSpeedUnitDropdownOptions, initialSelection = windSpeedUnitInitialSelection) { selectedOption ->
+            val windSpeedUnitInitialSelection by remember(selectedWindUnit) {
+                mutableStateOf(windSpeedUnitDropdownOptions.find { option -> option.id == selectedWindUnit.id }!!)
+            }
+            Dropdown(label = "Wind Speed Unit", options = windSpeedUnitDropdownOptions, selected = windSpeedUnitInitialSelection) { selectedOption ->
                 selectedWindUnit = WindUnit.entries.find { unit -> unit.id == selectedOption.id }!!
             }
 
             val precipitationUnitDropdownOptions = PrecipitationUnit.entries.toList().map { unit -> DropdownOption(unit.id, unit.label) }
-            val precipitationUnitInitialSelection = precipitationUnitDropdownOptions.find { option -> option.id == selectedPrecipitationUnit.id }!!
-            Dropdown(label = "Precipitation Unit", options = precipitationUnitDropdownOptions, initialSelection = precipitationUnitInitialSelection) { selectedOption ->
+            val precipitationUnitInitialSelection by remember(selectedPrecipitationUnit) {
+                mutableStateOf(precipitationUnitDropdownOptions.find { option -> option.id == selectedPrecipitationUnit.id }!!)
+            }
+            Dropdown(label = "Precipitation Unit", options = precipitationUnitDropdownOptions, selected = precipitationUnitInitialSelection) { selectedOption ->
                 selectedPrecipitationUnit = PrecipitationUnit.entries.find { unit -> unit.id == selectedOption.id }!!
             }
 

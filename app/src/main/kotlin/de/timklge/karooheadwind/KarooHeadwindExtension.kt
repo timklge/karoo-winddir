@@ -75,7 +75,7 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.0.0-beta2") {
                     }
                 }
 
-            streamSettings()
+            streamSettings(karooSystem)
                 .filter { it.welcomeDialogAccepted }
                 .combine(gpsFlow) { settings, gps -> settings to gps }
                 .map { (settings, gps) ->

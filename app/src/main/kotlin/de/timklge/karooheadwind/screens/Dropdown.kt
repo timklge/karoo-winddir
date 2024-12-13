@@ -17,14 +17,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 
-
 data class DropdownOption(val id: String, val name: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Dropdown(label: String, options: List<DropdownOption>, initialSelection: DropdownOption, onSelect: (selectedOption: DropdownOption) -> Unit) {
+fun Dropdown(label: String, options: List<DropdownOption>, selected: DropdownOption, onSelect: (selectedOption: DropdownOption) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    var selected by remember { mutableStateOf(initialSelection) }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -51,9 +49,8 @@ fun Dropdown(label: String, options: List<DropdownOption>, initialSelection: Dro
                 DropdownMenuItem(
                     text = { Text(option.name, style = MaterialTheme.typography.bodyLarge) },
                     onClick = {
-                        selected = option
                         expanded = false
-                        onSelect(selected)
+                        onSelect(option)
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                 )

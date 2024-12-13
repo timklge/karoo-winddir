@@ -68,7 +68,7 @@ class WeatherDataType(
 
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
             context.streamCurrentWeatherData()
-                .combine(context.streamSettings()) { data, settings -> StreamData(data, settings) }
+                .combine(context.streamSettings(karooSystem)) { data, settings -> StreamData(data, settings) }
                 .onCompletion {
                     // Clear view on completion
                     val result = glance.compose(context, DpSize.Unspecified) { }

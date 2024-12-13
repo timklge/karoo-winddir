@@ -72,7 +72,7 @@ class HeadwindDirectionDataType(
             karooSystem.streamDataFlow(dataTypeId)
                 .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue }
                 .combine(context.streamCurrentWeatherData()) { value, data -> value to data }
-                .combine(context.streamSettings()) { (value, data), settings -> StreamData(value, data, settings) }
+                .combine(context.streamSettings(karooSystem)) { (value, data), settings -> StreamData(value, data, settings) }
                 .onCompletion {
                     // Clear view on completion
                     val result = glance.compose(context, DpSize.Unspecified) { }
@@ -83,7 +83,7 @@ class HeadwindDirectionDataType(
                     val windSpeed = streamData.data.current.windSpeed
                     val windDirection = streamData.value
                     val headwindSpeed = cos( (windDirection + 180) * Math.PI / 180.0) * windSpeed
-                    val windSpeedText = "${headwindSpeed.roundToInt()}"
+                    val windSpeedText = headwindSpeed.roundToInt().toString()
 
                     val result = glance.compose(context, DpSize.Unspecified) {
                         HeadwindDirection(baseBitmap, windDirection.roundToInt(), config.textSize, windSpeedText)
