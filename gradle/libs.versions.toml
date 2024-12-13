@@ -1,19 +1,16 @@
 [versions]
-agp = "8.5.0"
-color = "1.3.0"
+agp = "8.5.2"
 datastorePreferences = "1.1.1"
 kotlin = "2.0.0"
 
-androidxCore = "1.13.1"
-androidxLifecycle = "2.8.6"
+androidxCore = "1.15.0"
+androidxLifecycle = "2.8.7"
 androidxActivity = "1.9.3"
-androidxComposeUi = "1.7.4"
-androidxComposeMaterial = "1.3.0"
+androidxComposeUi = "1.7.6"
+androidxComposeMaterial = "1.3.1"
 glance = "1.1.1"
 kotlinxDatetime = "0.6.1"
 kotlinxSerializationJson = "1.7.3"
-navigationRuntimeKtx = "2.8.4"
-navigationCompose = "2.8.4"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -22,8 +19,7 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 
 [libraries]
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
-hammerhead-karoo-ext = { group = "io.hammerhead", name = "karoo-ext", version = "1.1.1" }
-
+hammerhead-karoo-ext = { group = "io.hammerhead", name = "karoo-ext", version = "1.1.2" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
 
 # compose
@@ -40,8 +36,6 @@ androidx-compose-material = { module = "androidx.compose.material3:material3", v
 androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
 androidx-glance-appwidget-preview = { group = "androidx.glance", name = "glance-appwidget-preview", version.ref = "glance" }
 androidx-glance-preview = { group = "androidx.glance", name = "glance-preview", version.ref = "glance" }
-androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
-androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 
 [bundles]

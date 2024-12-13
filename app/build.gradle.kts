@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "de.timklge.karooheadwind"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "de.timklge.karooheadwind"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 2
         versionName = "1.0.0-beta2"
     }
@@ -41,8 +41,6 @@ dependencies {
     implementation(libs.bundles.androidx.lifeycle)
     implementation(libs.androidx.activity.compose)
     implementation(libs.bundles.compose.ui)
-    implementation(libs.androidx.navigation.runtime.ktx)
-    implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.glance.appwidget)
