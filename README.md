@@ -1,12 +1,9 @@
 # Karoo Headwind Extension
 
-> [!WARNING]  
-> This app is currently in prototype stage and its main features might not work at all. If you want to test it anyway and encounter issues, please report them in the [issue tracker](https://github.com/timklge/karoo-headwind/issues), ideally with adb logs attached.
-
 This extension for Karoo devices adds a graphical data field that shows the current headwind direction as an arrow.
 It also provides data fields for relative humidity, cloud coverage, wind speed, wind gust speed, surface pressure, and rainfall at the current location.
 
-Compatible with Karoo 2 and Karoo 3 devices running Karoo OS version 1.524.2003 and later.
+Compatible with Karoo 2 and Karoo 3 devices.
 
 ![Settings](preview0.png)
 ![Field setup](preview1.png)
@@ -14,11 +11,16 @@ Compatible with Karoo 2 and Karoo 3 devices running Karoo OS version 1.524.2003 
 
 ## Installation
 
-Currently, Hammerhead has not yet released an on-device app store for easy installation of extensions like this. Until then, you can sideload the app.
+If you are using a Karoo 3, you can use [Hammerhead's sideloading procedure](https://support.hammerhead.io/hc/en-us/articles/31576497036827-Companion-App-Sideloading) to install the app:
 
-1. Download the APK from the [releases page](https://github.com/timklge/karoo-headwind/releases) (or build it from source).
-2. Prepare your Karoo for sideloading by following the [step-by-step guide](https://www.dcrainmaker.com/2021/02/how-to-sideload-android-apps-on-your-hammerhead-karoo-1-karoo-2.html) by DC Rainmaker.
-3. Install the app using the command `adb install app-release.apk`.
+1. Open the [releases page](https://github.com/timklge/karoo-headwind/releases) on your phone's browser, long-press the `app-release.apk` link and share it with the Hammerhead Companion app.
+2. Your karoo should show an info screen about the app now. Press "Install".
+
+If you are using a Karoo 2, you can use manual sideloading:
+
+1. Download the apk from the [releases page](https://github.com/timklge/karoo-headwind/releases) (or build it from source)
+2. Set up your Karoo for sideloading. DC Rainmaker has a great [step-by-step guide](https://www.dcrainmaker.com/2021/02/how-to-sideload-android-apps-on-your-hammerhead-karoo-1-karoo-2.html).
+3. Install the app by running `adb install app-release.apk`.
 
 ## Usage
 
