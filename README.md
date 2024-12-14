@@ -24,12 +24,16 @@ If you are using a Karoo 2, you can use manual sideloading:
 
 ## Usage
 
-After installing this app on your Karoo, you can add a data field showing the headwind direction or one of the auxiliary fields to your data pages. The headwind direction will be shown as a circle, with the wind direction relative to the riding direction indicated by a triangular pointer. At the center of the circle, the headwind speed is shown in your chosen unit of measurement (default is kilometers per hour if you have set up metric units in your Karoo, otherwise miles per hour).
+After installing this app on your Karoo, you can add the following new data fields to your data pages:
+
+- Headwind (graphical): Shows the headwind direction and speed as a circle with a triangular direction indicator. The speed is shown at the center in your set unit of measurement (default is kilometers per hour if you have set up metric units in your Karoo, otherwise miles per hour). Both direction and speed are relative to the current riding direction.
+- Weather (graphical): Shows an icon indicating the current weather conditions (sunny, cloudy, ...). Additionally, current absolute wind direction, speed and wind gust speed are shown below the icon.
+- Additionally, data fields that only show the current data value for headwind speed, humidity, cloud cover, absolute wind speed, absolute wind gust speed, absolute wind direction, rainfall and surface pressure can be added if desired.
 
 The app will automatically attempt to download weather data for your current approximate location from the [open-meteo.com](https://open-meteo.com) API once your device has acquired a GPS fix. The API service is free for non-commercial use. Your location is rounded to approximately two kilometers to maintain privacy. The data is updated when you ride more than two kilometers from the location where the weather data was downloaded or after one hour at the latest. If the app cannot connect to the weather service, it will retry the download every minute. Downloading weather data should work on Karoo 2 if you have a SIM card inserted or on Karoo 3 via your phone's internet connection if you have the Karoo companion app installed.
 
 ## Credits
 
-- Icons are from [boxicons.com](https://boxicons.com) (MIT-licensed)
+- Icons are from [boxicons.com](https://boxicons.com) ([MIT-licensed](icon_credits.txt))
 - Made possible by the generous usage terms of [open-meteo.com](https://open-meteo.com)
 - Uses [karoo-ext](https://github.com/hammerheadnav/karoo-ext) (Apache2-licensed)
