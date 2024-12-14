@@ -1,7 +1,6 @@
 # Karoo Headwind Extension
 
-This extension for Karoo devices adds a graphical data field that shows the current headwind direction as an arrow.
-It also provides data fields for current weather, humidity, wind gust speed, surface pressure, and rainfall at the current location.
+This extension for Karoo devices adds a graphical data field that shows the current headwind direction and speed relative to the riding direction.
 
 Compatible with Karoo 2 and Karoo 3 devices.
 
