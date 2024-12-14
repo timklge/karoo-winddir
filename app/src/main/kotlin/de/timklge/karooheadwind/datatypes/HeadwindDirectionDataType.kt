@@ -77,7 +77,7 @@ class HeadwindDirectionDataType(
 
         val baseBitmap = BitmapFactory.decodeResource(
             context.resources,
-            de.timklge.karooheadwind.R.drawable.arrow
+            de.timklge.karooheadwind.R.drawable.circle
         )
 
         val configJob = CoroutineScope(Dispatchers.IO).launch {

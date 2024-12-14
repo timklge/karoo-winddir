@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.scan
@@ -40,7 +39,6 @@ import kotlinx.serialization.json.Json
 import java.time.Duration
 import kotlin.math.abs
 import kotlin.math.absoluteValue
-import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 val jsonWithUnknownKeys = Json { ignoreUnknownKeys = true }
@@ -203,14 +201,10 @@ fun KarooSystemService.getRelativeHeadingFlow(context: Context): Flow<Double> {
         }
 }
 
-fun Double.lerp(target: Double, alpha: Double): Double {
-    return this + (target - this) * alpha
-}
-
 fun KarooSystemService.getHeadingFlow(): Flow<Double> {
     //return flowOf(20.0)
 
-    return streamDataFlow("TYPE_LOCATION_ID")
+    return streamDataFlow(DataType.Type.LOCATION)
         .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.values }
         .map { values ->
             val heading = values[DataType.Field.LOC_BEARING]
@@ -218,7 +212,7 @@ fun KarooSystemService.getHeadingFlow(): Flow<Double> {
             heading ?: 0.0
         }
         .distinctUntilChanged()
-        .scan(emptyList<Double>()) { acc, value ->
+        .scan(emptyList<Double>()) { acc, value -> /* Average over 3 values */
             val newAcc = acc + value
             if (newAcc.size > 3) newAcc.drop(1) else newAcc
         }
@@ -229,7 +223,7 @@ fun KarooSystemService.getHeadingFlow(): Flow<Double> {
 fun KarooSystemService.getGpsCoordinateFlow(): Flow<GpsCoordinates> {
     // return flowOf(GpsCoordinates(52.5164069,13.3784))
 
-    return streamDataFlow("TYPE_LOCATION_ID")
+    return streamDataFlow(DataType.Type.LOCATION)
         .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.values }
         .mapNotNull { values ->
             val lat = values[DataType.Field.LOC_LATITUDE]
