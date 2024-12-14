@@ -161,11 +161,13 @@ fun MainScreen() {
             val lastPositionDistanceStr = lastPosition?.let { dist -> " (${dist.roundToInt()} km away)" } ?: ""
 
             if (stats.failedWeatherRequest != null && (stats.lastSuccessfulWeatherRequest == null || stats.failedWeatherRequest!! > stats.lastSuccessfulWeatherRequest!!)){
-                val localTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(stats.failedWeatherRequest!!), ZoneOffset.systemDefault()).toLocalTime().truncatedTo(
+                val successfulTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(stats.lastSuccessfulWeatherRequest!!), ZoneOffset.systemDefault()).toLocalTime().truncatedTo(
+                    ChronoUnit.SECONDS)
+                val lastTryTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(stats.failedWeatherRequest!!), ZoneOffset.systemDefault()).toLocalTime().truncatedTo(
                     ChronoUnit.SECONDS)
 
-                val successStr = if(lastPosition != null) " Last data received at ${localTime}${lastPositionDistanceStr}." else ""
-                Text(modifier = Modifier.padding(5.dp), text = "Failed to update weather data; last try at ${localTime}.${successStr}")
+                val successStr = if(lastPosition != null) " Last data received at ${successfulTime}${lastPositionDistanceStr}." else ""
+                Text(modifier = Modifier.padding(5.dp), text = "Failed to update weather data; last try at ${lastTryTime}.${successStr}")
             } else if(stats.lastSuccessfulWeatherRequest != null){
                 val localTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(stats.lastSuccessfulWeatherRequest!!), ZoneOffset.systemDefault()).toLocalTime().truncatedTo(
                     ChronoUnit.SECONDS)
