@@ -59,7 +59,7 @@ fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int
         Row(horizontalAlignment = Alignment.CenterHorizontally, verticalAlignment = Alignment.CenterVertically) {
             Image(
                 modifier = GlanceModifier.height(20.dp).width(12.dp),
-                provider = ImageProvider(getArrowBitmapByBearing(baseBitmap, windBearing)),
+                provider = ImageProvider(getArrowBitmapByBearing(baseBitmap, windBearing + 180)),
                 contentDescription = "Current wind direction",
                 contentScale = ContentScale.Fit,
                 colorFilter = ColorFilter.tint(ColorProvider(Color.Black, Color.White))
