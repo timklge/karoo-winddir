@@ -208,7 +208,7 @@ fun KarooSystemService.getHeadingFlow(): Flow<Double> {
         .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.values }
         .map { values ->
             val heading = values[DataType.Field.LOC_BEARING]
-
+            Log.d(KarooHeadwindExtension.TAG, "Updated gps bearing: $heading")
             heading ?: 0.0
         }
         .distinctUntilChanged()

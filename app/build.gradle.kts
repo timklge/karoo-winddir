@@ -1,3 +1,5 @@
+import java.util.Base64
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -17,9 +19,26 @@ android {
         versionName = "1.0.0-beta2"
     }
 
+    signingConfigs {
+        create("release") {
+            val env: MutableMap<String, String> = System.getenv()
+            keyAlias = env["KEY_ALIAS"]
+            keyPassword = env["KEY_PASSWORD"]
+
+            val base64keystore: String = env["KEYSTORE_BASE64"] ?: ""
+            val keystoreFile: File = File.createTempFile("keystore", ".jks")
+            keystoreFile.writeBytes(Base64.getDecoder().decode(base64keystore))
+            storeFile = keystoreFile
+            storePassword = env["KEYSTORE_PASSWORD"]
+        }
+    }
     buildTypes {
-        release {
+        debug {
             isMinifyEnabled = false
+        }
+        release {
+            signingConfig = signingConfigs.getByName("release")
+            // isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

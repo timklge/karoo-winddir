@@ -16,8 +16,11 @@ pluginManagement {
         mavenCentral()
     }
 }
-val gprUser = getLocalProperty("gpr.user")
-val gprKey = getLocalProperty("gpr.key")
+
+val env: MutableMap<String, String> = System.getenv()
+val gprUser = if(env.containsKey("GPR_USER")) env["GPR_USER"] else getLocalProperty("gpr.user")
+val gprKey = if(env.containsKey("GPR_KEY")) env["GPR_KEY"] else getLocalProperty("gpr.key")
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
