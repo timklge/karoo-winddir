@@ -73,7 +73,7 @@ fun getArrowBitmapByBearing(baseBitmap: Bitmap, bearing: Int): Bitmap {
 @Composable
 fun HeadwindDirection(baseBitmap: Bitmap, bearing: Int, fontSize: Int, overlayText: String) {
     Box(
-        modifier = GlanceModifier.fillMaxSize().padding(3.dp),
+        modifier = GlanceModifier.fillMaxSize().padding(5.dp),
         contentAlignment = Alignment(
             vertical = Alignment.Vertical.CenterVertically,
             horizontal = Alignment.Horizontal.CenterHorizontally,
@@ -87,10 +87,12 @@ fun HeadwindDirection(baseBitmap: Bitmap, bearing: Int, fontSize: Int, overlayTe
             colorFilter = ColorFilter.tint(ColorProvider(Color.Black, Color.White))
         )
 
+        if (overlayText.isNotEmpty()){
         Text(
             overlayText,
-            style = TextStyle(ColorProvider(Color.Black, Color.White), fontSize = (0.5 * fontSize).sp, fontFamily = FontFamily.Monospace),
+            style = TextStyle(ColorProvider(Color.Black, Color.White), fontSize = (0.6 * fontSize).sp, fontFamily = FontFamily.Monospace),
             modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
         )
+        }
     }
 }
