@@ -1,8 +1,8 @@
 # Karoo Headwind Extension
 
 [![Build](https://github.com/timklge/karoo-headwind/actions/workflows/android.yml/badge.svg)](https://github.com/timklge/karoo-headwind/actions/workflows/android.yml)
-![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/timklge/karoo-headwind/app-release.apk)
-![GitHub License](https://img.shields.io/github/license/timklge/karoo-headwind)
+[![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/timklge/karoo-headwind/app-release.apk)](https://github.com/timklge/karoo-headwind/releases)
+[![GitHub License](https://img.shields.io/github/license/timklge/karoo-headwind)](https://github.com/timklge/karoo-headwind?tab=Apache-2.0-1-ov-file)
 
 This extension for Karoo devices adds a graphical data field that shows the current headwind direction and speed relative to the riding direction.
 
