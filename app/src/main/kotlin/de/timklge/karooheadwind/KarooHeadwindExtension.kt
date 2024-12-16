@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
-class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.0.0-beta2") {
+class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.0.1") {
     companion object {
         const val TAG = "karoo-headwind"
     }
