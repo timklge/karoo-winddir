@@ -7,10 +7,9 @@ import androidx.compose.ui.unit.DpSize
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
 import de.timklge.karooheadwind.KarooHeadwindExtension
-import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
-import de.timklge.karooheadwind.OpenMeteoData
 import de.timklge.karooheadwind.getRelativeHeadingFlow
 import de.timklge.karooheadwind.screens.HeadwindSettings
+import de.timklge.karooheadwind.screens.WindDirectionIndicatorTextSetting
 import de.timklge.karooheadwind.streamCurrentWeatherData
 import de.timklge.karooheadwind.streamDataFlow
 import de.timklge.karooheadwind.streamSettings
@@ -29,12 +28,10 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.roundToInt
 
@@ -106,11 +103,17 @@ class HeadwindDirectionDataType(
                     Log.d(KarooHeadwindExtension.TAG, "Updating headwind direction view")
                     val windSpeed = streamData.windSpeed
                     val windDirection = streamData.value
-                    val headwindSpeed = cos( (windDirection + 180) * Math.PI / 180.0) * windSpeed
-                    val windSpeedText = headwindSpeed.roundToInt().toString()
+                    val text = when (streamData.settings.windDirectionIndicatorTextSetting) {
+                        WindDirectionIndicatorTextSetting.HEADWIND_SPEED -> {
+                            val headwindSpeed = cos( (windDirection + 180) * Math.PI / 180.0) * windSpeed
+                            headwindSpeed.roundToInt().toString()
+                        }
+                        WindDirectionIndicatorTextSetting.WIND_SPEED -> windSpeed.roundToInt().toString()
+                        WindDirectionIndicatorTextSetting.NONE -> ""
+                    }
 
                     val result = glance.compose(context, DpSize.Unspecified) {
-                        HeadwindDirection(baseBitmap, windDirection.roundToInt(), config.textSize, windSpeedText)
+                        HeadwindDirection(baseBitmap, windDirection.roundToInt(), config.textSize, text)
                     }
 
                     emitter.updateView(result.remoteViews)

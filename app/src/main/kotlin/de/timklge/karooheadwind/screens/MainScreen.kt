@@ -60,11 +60,18 @@ enum class PrecipitationUnit(val id: String, val label: String){
     INCH("inch", "Inch")
 }
 
+enum class WindDirectionIndicatorTextSetting(val id: String, val label: String){
+    HEADWIND_SPEED("headwind-speed", "Headwind speed"),
+    WIND_SPEED("absolute-wind-speed", "Absolute wind speed"),
+    NONE("none", "None")
+}
+
 @Serializable
 data class HeadwindSettings(
     val windUnit: WindUnit = WindUnit.KILOMETERS_PER_HOUR,
     val precipitationUnit: PrecipitationUnit = PrecipitationUnit.MILLIMETERS,
     val welcomeDialogAccepted: Boolean = false,
+    val windDirectionIndicatorTextSetting: WindDirectionIndicatorTextSetting = WindDirectionIndicatorTextSetting.HEADWIND_SPEED,
 ){
     companion object {
         val defaultSettings = Json.encodeToString(HeadwindSettings())
@@ -93,6 +100,7 @@ fun MainScreen() {
     var selectedWindUnit by remember { mutableStateOf(WindUnit.KILOMETERS_PER_HOUR) }
     var selectedPrecipitationUnit by remember { mutableStateOf(PrecipitationUnit.MILLIMETERS) }
     var welcomeDialogVisible by remember { mutableStateOf(false) }
+    var selectedWindDirectionIndicatorTextSetting by remember { mutableStateOf(WindDirectionIndicatorTextSetting.HEADWIND_SPEED) }
 
     val stats by ctx.streamStats().collectAsState(HeadwindStats())
     val location by karooSystem.getGpsCoordinateFlow().collectAsState(initial = null)
@@ -104,6 +112,7 @@ fun MainScreen() {
             selectedWindUnit = settings.windUnit
             selectedPrecipitationUnit = settings.precipitationUnit
             welcomeDialogVisible = !settings.welcomeDialogAccepted
+            selectedWindDirectionIndicatorTextSetting = settings.windDirectionIndicatorTextSetting
         }
     }
 
@@ -138,10 +147,19 @@ fun MainScreen() {
                 selectedPrecipitationUnit = PrecipitationUnit.entries.find { unit -> unit.id == selectedOption.id }!!
             }
 
+            val windDirectionIndicatorTextSettingDropdownOptions = WindDirectionIndicatorTextSetting.entries.toList().map { unit -> DropdownOption(unit.id, unit.label) }
+            val windDirectionIndicatorTextSettingSelection by remember(selectedWindDirectionIndicatorTextSetting) {
+                mutableStateOf(windDirectionIndicatorTextSettingDropdownOptions.find { option -> option.id == selectedWindDirectionIndicatorTextSetting.id }!!)
+            }
+            Dropdown(label = "Text on headwind indicator", options = windDirectionIndicatorTextSettingDropdownOptions, selected = windDirectionIndicatorTextSettingSelection) { selectedOption ->
+                selectedWindDirectionIndicatorTextSetting = WindDirectionIndicatorTextSetting.entries.find { unit -> unit.id == selectedOption.id }!!
+            }
+
             FilledTonalButton(modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp), onClick = {
-                    val newSettings = HeadwindSettings(windUnit = selectedWindUnit, precipitationUnit = selectedPrecipitationUnit, welcomeDialogAccepted = true)
+                    val newSettings = HeadwindSettings(windUnit = selectedWindUnit, precipitationUnit = selectedPrecipitationUnit,
+                        welcomeDialogAccepted = true, windDirectionIndicatorTextSetting = selectedWindDirectionIndicatorTextSetting)
 
                     coroutineScope.launch {
                         saveSettings(ctx, newSettings)
