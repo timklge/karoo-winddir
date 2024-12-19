@@ -51,16 +51,14 @@ fun getWeatherIcon(interpretation: WeatherInterpretation): Int {
 @Composable
 fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int, windSpeed: Int, windGusts: Int, windSpeedUnit: WindUnit,
             precipitation: Double, precipitationProbability: Int?, precipitationUnit: PrecipitationUnit,
-            temperature: Int, temperatureUnit: TemperatureUnit, timeLabel: String? = null) {
+            temperature: Int, temperatureUnit: TemperatureUnit, timeLabel: String? = null, rowAlignment: Alignment.Horizontal = Alignment.Horizontal.CenterHorizontally) {
 
     val fontSize = 14f
 
-    Column(modifier = GlanceModifier.fillMaxHeight().padding(2.dp), horizontalAlignment = Alignment.End) {
-        Row(modifier = GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.End) {
-            val imageW = 60
-            val imageH = (imageW * (280.0 / 400)).toInt()
+    Column(modifier = GlanceModifier.fillMaxHeight().padding(2.dp).width(85.dp), horizontalAlignment = rowAlignment) {
+        Row(modifier = GlanceModifier.defaultWeight(), horizontalAlignment = rowAlignment, verticalAlignment = Alignment.CenterVertically) {
             Image(
-                modifier = GlanceModifier.height(imageH.dp).width(imageW.dp),
+                modifier = GlanceModifier.defaultWeight(),
                 provider = ImageProvider(getWeatherIcon(current)),
                 contentDescription = "Current weather information",
                 contentScale = ContentScale.Fit,
@@ -68,7 +66,7 @@ fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int
             )
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalAlignment = rowAlignment) {
             if (timeLabel != null){
                 Text(
                     text = timeLabel,
@@ -93,7 +91,7 @@ fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int
             )
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalAlignment = rowAlignment) {
             /* Image(
                 modifier = GlanceModifier.height(20.dp).width(12.dp),
                 provider = ImageProvider(R.drawable.water_regular),

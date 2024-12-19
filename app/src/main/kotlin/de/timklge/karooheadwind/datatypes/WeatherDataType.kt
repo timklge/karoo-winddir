@@ -109,7 +109,12 @@ class WeatherDataType(
                                 precipitationUnit = if (userProfile?.preferredUnit?.distance != UserProfile.PreferredUnit.UnitType.IMPERIAL) PrecipitationUnit.MILLIMETERS else PrecipitationUnit.INCH,
                                 temperature = data.current.temperature.roundToInt(),
                                 temperatureUnit = if (userProfile?.preferredUnit?.temperature != UserProfile.PreferredUnit.UnitType.IMPERIAL) TemperatureUnit.CELSIUS else TemperatureUnit.FAHRENHEIT,
-                                timeLabel = formattedTime
+                                timeLabel = formattedTime,
+                                rowAlignment = when (config.alignment){
+                                    ViewConfig.Alignment.LEFT -> Alignment.Horizontal.Start
+                                    ViewConfig.Alignment.CENTER -> Alignment.Horizontal.CenterHorizontally
+                                    ViewConfig.Alignment.RIGHT -> Alignment.Horizontal.End
+                                }
                             )
                         }
                     }
