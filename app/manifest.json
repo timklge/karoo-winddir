@@ -7,5 +7,5 @@
   "latestVersionCode": 4,
   "developer": "timklge",
   "description": "Provides headwind direction, wind speed and other weather data fields",
-  "releaseNotes": "Add temperature datafield"
+  "releaseNotes": "Add hourly forecast and temperature datafields"
 }
