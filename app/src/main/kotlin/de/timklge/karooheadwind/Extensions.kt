@@ -122,12 +122,9 @@ fun Context.streamSettings(karooSystemService: KarooSystemService): Flow<Headwin
                 val defaultSettings = jsonWithUnknownKeys.decodeFromString<HeadwindSettings>(HeadwindSettings.defaultSettings)
 
                 val preferredUnits = karooSystemService.streamUserProfile().first().preferredUnit
-                val preferredMetric = preferredUnits.distance == UserProfile.PreferredUnit.UnitType.METRIC
 
                 defaultSettings.copy(
                     windUnit = if (preferredUnits.distance == UserProfile.PreferredUnit.UnitType.METRIC) WindUnit.KILOMETERS_PER_HOUR else WindUnit.MILES_PER_HOUR,
-                    precipitationUnit = if (preferredMetric) PrecipitationUnit.MILLIMETERS else PrecipitationUnit.INCH,
-                    temperatureUnit = if (preferredUnits.temperature == UserProfile.PreferredUnit.UnitType.METRIC) TemperatureUnit.CELSIUS else TemperatureUnit.FAHRENHEIT
                 )
             }
         } catch(e: Throwable){
@@ -162,10 +159,13 @@ fun KarooSystemService.streamUserProfile(): Flow<UserProfile> {
 }
 
 @OptIn(FlowPreview::class)
-suspend fun KarooSystemService.makeOpenMeteoHttpRequest(gpsCoordinates: GpsCoordinates, settings: HeadwindSettings): HttpResponseState.Complete {
+suspend fun KarooSystemService.makeOpenMeteoHttpRequest(gpsCoordinates: GpsCoordinates, settings: HeadwindSettings, profile: UserProfile?): HttpResponseState.Complete {
+    val precipitationUnit = if (profile?.preferredUnit?.distance != UserProfile.PreferredUnit.UnitType.IMPERIAL) PrecipitationUnit.MILLIMETERS else PrecipitationUnit.INCH
+    val temperatureUnit = if (profile?.preferredUnit?.temperature != UserProfile.PreferredUnit.UnitType.IMPERIAL) TemperatureUnit.CELSIUS else TemperatureUnit.FAHRENHEIT
+
     return callbackFlow {
         // https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=surface_pressure,temperature_2m,relative_humidity_2m,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m&timeformat=unixtime&past_hours=1&forecast_days=1&forecast_hours=12
-        val url = "https://api.open-meteo.com/v1/forecast?latitude=${gpsCoordinates.lat}&longitude=${gpsCoordinates.lon}&current=surface_pressure,temperature_2m,relative_humidity_2m,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m&timeformat=unixtime&past_hours=0&forecast_days=1&forecast_hours=12&wind_speed_unit=${settings.windUnit.id}&precipitation_unit=${settings.precipitationUnit.id}&temperature_unit=${settings.temperatureUnit.id}"
+        val url = "https://api.open-meteo.com/v1/forecast?latitude=${gpsCoordinates.lat}&longitude=${gpsCoordinates.lon}&current=surface_pressure,temperature_2m,relative_humidity_2m,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m&timeformat=unixtime&past_hours=0&forecast_days=1&forecast_hours=12&wind_speed_unit=${settings.windUnit.id}&precipitation_unit=${precipitationUnit.id}&temperature_unit=${temperatureUnit.id}"
 
         Log.d(KarooHeadwindExtension.TAG, "Http request to ${url}...")
 
@@ -246,7 +246,7 @@ fun KarooSystemService.getHeadingFlow(): Flow<Double> {
 }
 
 @OptIn(FlowPreview::class)
-fun KarooSystemService.getGpsCoordinateFlow(): Flow<GpsCoordinates> {
+fun KarooSystemService.getGpsCoordinateFlow(context: Context): Flow<GpsCoordinates> {
     // return flowOf(GpsCoordinates(52.5164069,13.3784))
 
     return streamDataFlow(DataType.Type.LOCATION)
@@ -263,7 +263,12 @@ fun KarooSystemService.getGpsCoordinateFlow(): Flow<GpsCoordinates> {
                 null
             }
         }
-        .map { it.round() }
+        .combine(context.streamSettings(this)) { gps, settings -> gps to settings }
+        .map { (gps, settings) ->
+            val rounded = gps.round(settings.roundLocationTo.km.toDouble())
+            Log.d(KarooHeadwindExtension.TAG, "Round location to ${settings.roundLocationTo.km} - $rounded")
+            rounded
+        }
         .distinctUntilChanged { old, new -> old.distanceTo(new).absoluteValue < 0.001 }
         .debounce(Duration.ofSeconds(10))
 }

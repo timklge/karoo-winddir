@@ -14,8 +14,11 @@ import de.timklge.karooheadwind.KarooHeadwindExtension
 import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
 import de.timklge.karooheadwind.WeatherInterpretation
 import de.timklge.karooheadwind.screens.HeadwindSettings
+import de.timklge.karooheadwind.screens.PrecipitationUnit
+import de.timklge.karooheadwind.screens.TemperatureUnit
 import de.timklge.karooheadwind.streamCurrentWeatherData
 import de.timklge.karooheadwind.streamSettings
+import de.timklge.karooheadwind.streamUserProfile
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.internal.Emitter
@@ -24,6 +27,7 @@ import io.hammerhead.karooext.models.DataPoint
 import io.hammerhead.karooext.models.DataType
 import io.hammerhead.karooext.models.StreamState
 import io.hammerhead.karooext.models.UpdateGraphicConfig
+import io.hammerhead.karooext.models.UserProfile
 import io.hammerhead.karooext.models.ViewConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -75,17 +79,19 @@ class WeatherDataType(
             de.timklge.karooheadwind.R.drawable.arrow_0
         )
 
-        data class StreamData(val data: OpenMeteoCurrentWeatherResponse, val settings: HeadwindSettings)
+        data class StreamData(val data: OpenMeteoCurrentWeatherResponse, val settings: HeadwindSettings,
+            val profile: UserProfile? = null)
 
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
             context.streamCurrentWeatherData()
                 .combine(context.streamSettings(karooSystem)) { data, settings -> StreamData(data, settings) }
+                .combine(karooSystem.streamUserProfile()) { data, profile -> data.copy(profile = profile) }
                 .onCompletion {
                     // Clear view on completion
                     val result = glance.compose(context, DpSize.Unspecified) { }
                     emitter.updateView(result.remoteViews)
                 }
-                .collect { (data, settings) ->
+                .collect { (data, settings, userProfile) ->
                     Log.d(KarooHeadwindExtension.TAG, "Updating weather view")
                     val interpretation = WeatherInterpretation.fromWeatherCode(data.current.weatherCode)
                     val formattedTime = timeFormatter.format(Instant.ofEpochSecond(data.current.time))
@@ -100,9 +106,9 @@ class WeatherDataType(
                                 windSpeedUnit = settings.windUnit,
                                 precipitation = data.current.precipitation,
                                 precipitationProbability = null,
-                                precipitationUnit = settings.precipitationUnit,
+                                precipitationUnit = if (userProfile?.preferredUnit?.distance != UserProfile.PreferredUnit.UnitType.IMPERIAL) PrecipitationUnit.MILLIMETERS else PrecipitationUnit.INCH,
                                 temperature = data.current.temperature.roundToInt(),
-                                temperatureUnit = settings.temperatureUnit,
+                                temperatureUnit = if (userProfile?.preferredUnit?.temperature != UserProfile.PreferredUnit.UnitType.IMPERIAL) TemperatureUnit.CELSIUS else TemperatureUnit.FAHRENHEIT,
                                 timeLabel = formattedTime
                             )
                         }

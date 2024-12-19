@@ -14,9 +14,12 @@ import de.timklge.karooheadwind.datatypes.TemperatureDataType
 import de.timklge.karooheadwind.datatypes.WeatherDataType
 import de.timklge.karooheadwind.datatypes.WeatherForecastDataType
 import de.timklge.karooheadwind.datatypes.WindSpeedDataType
+import de.timklge.karooheadwind.screens.HeadwindSettings
 import de.timklge.karooheadwind.screens.HeadwindStats
+import de.timklge.karooheadwind.screens.HeadwindWidgetSettings
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.KarooExtension
+import io.hammerhead.karooext.models.UserProfile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,7 +35,7 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
-class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1") {
+class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.1") {
     companion object {
         const val TAG = "karoo-headwind"
     }
@@ -59,6 +62,9 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1") {
         )
     }
 
+    data class StreamData(val settings: HeadwindSettings, val gps: GpsCoordinates,
+                          val profile: UserProfile? = null)
+
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
@@ -73,7 +79,7 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1") {
             }
 
             val gpsFlow = karooSystem
-                .getGpsCoordinateFlow()
+                .getGpsCoordinateFlow(this@KarooHeadwindExtension)
                 .transformLatest { value: GpsCoordinates ->
                     while(true){
                         emit(value)
@@ -83,8 +89,9 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1") {
 
             streamSettings(karooSystem)
                 .filter { it.welcomeDialogAccepted }
-                .combine(gpsFlow) { settings, gps -> settings to gps }
-                .map { (settings, gps) ->
+                .combine(gpsFlow) { settings, gps -> StreamData(settings, gps) }
+                .combine(karooSystem.streamUserProfile()) { data, profile -> data.copy(profile = profile) }
+                .map { (settings, gps, profile) ->
                     Log.d(TAG, "Acquired updated gps coordinates: $gps")
 
                     val lastKnownStats = try {
@@ -94,7 +101,7 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1") {
                         HeadwindStats()
                     }
 
-                    val response = karooSystem.makeOpenMeteoHttpRequest(gps, settings)
+                    val response = karooSystem.makeOpenMeteoHttpRequest(gps, settings, profile)
                     if (response.error != null){
                         try {
                             val stats = lastKnownStats.copy(failedWeatherRequest = System.currentTimeMillis())

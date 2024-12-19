@@ -3,8 +3,8 @@
   "packageName": "de.timklge.karooheadwind",
   "iconUrl": "https://github.com/timklge/karoo-headwind/releases/latest/download/karoo-headwind.png",
   "latestApkUrl": "https://github.com/timklge/karoo-headwind/releases/latest/download/app-release.apk",
-  "latestVersion": "1.1",
-  "latestVersionCode": 4,
+  "latestVersion": "1.1.1",
+  "latestVersionCode": 5,
   "developer": "timklge",
   "description": "Provides headwind direction, wind speed and other weather data fields",
   "releaseNotes": "Add hourly forecast and temperature datafields"

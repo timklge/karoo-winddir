@@ -71,13 +71,18 @@ enum class TemperatureUnit(val id: String, val label: String, val unitDisplay: S
     FAHRENHEIT("fahrenheit", "Fahrenheit (°F)", "°F")
 }
 
+enum class RoundLocationSetting(val id: String, val label: String, val km: Int){
+    KM_1("1 km", "1 km", 1),
+    KM_2("2 km", "2 km", 2),
+    KM_5("5 km", "5 km", 5)
+}
+
 @Serializable
 data class HeadwindSettings(
     val windUnit: WindUnit = WindUnit.KILOMETERS_PER_HOUR,
-    val precipitationUnit: PrecipitationUnit = PrecipitationUnit.MILLIMETERS,
-    val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
     val welcomeDialogAccepted: Boolean = false,
     val windDirectionIndicatorTextSetting: WindDirectionIndicatorTextSetting = WindDirectionIndicatorTextSetting.HEADWIND_SPEED,
+    val roundLocationTo: RoundLocationSetting = RoundLocationSetting.KM_2
 ){
     companion object {
         val defaultSettings = Json.encodeToString(HeadwindSettings())
@@ -113,23 +118,21 @@ fun MainScreen() {
     val karooSystem = remember { KarooSystemService(ctx) }
 
     var selectedWindUnit by remember { mutableStateOf(WindUnit.KILOMETERS_PER_HOUR) }
-    var selectedPrecipitationUnit by remember { mutableStateOf(PrecipitationUnit.MILLIMETERS) }
-    var selectedTemperatureUnit by remember { mutableStateOf(TemperatureUnit.CELSIUS) }
     var welcomeDialogVisible by remember { mutableStateOf(false) }
     var selectedWindDirectionIndicatorTextSetting by remember { mutableStateOf(WindDirectionIndicatorTextSetting.HEADWIND_SPEED) }
+    var selectedRoundLocationSetting by remember { mutableStateOf(RoundLocationSetting.KM_2) }
 
     val stats by ctx.streamStats().collectAsState(HeadwindStats())
-    val location by karooSystem.getGpsCoordinateFlow().collectAsState(initial = null)
+    val location by karooSystem.getGpsCoordinateFlow(ctx).collectAsState(initial = null)
 
     var savedDialogVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         ctx.streamSettings(karooSystem).collect { settings ->
             selectedWindUnit = settings.windUnit
-            selectedPrecipitationUnit = settings.precipitationUnit
             welcomeDialogVisible = !settings.welcomeDialogAccepted
             selectedWindDirectionIndicatorTextSetting = settings.windDirectionIndicatorTextSetting
-            selectedTemperatureUnit = settings.temperatureUnit
+            selectedRoundLocationSetting = settings.roundLocationTo
         }
     }
 
@@ -164,28 +167,21 @@ fun MainScreen() {
                 selectedWindUnit = WindUnit.entries.find { unit -> unit.id == selectedOption.id }!!
             }
 
-            val precipitationUnitDropdownOptions = PrecipitationUnit.entries.toList().map { unit -> DropdownOption(unit.id, unit.label) }
-            val precipitationUnitInitialSelection by remember(selectedPrecipitationUnit) {
-                mutableStateOf(precipitationUnitDropdownOptions.find { option -> option.id == selectedPrecipitationUnit.id }!!)
+            val roundLocationDropdownOptions = RoundLocationSetting.entries.toList().map { unit -> DropdownOption(unit.id, unit.label) }
+            val roundLocationInitialSelection by remember(selectedRoundLocationSetting) {
+                mutableStateOf(roundLocationDropdownOptions.find { option -> option.id == selectedRoundLocationSetting.id }!!)
             }
-            Dropdown(label = "Precipitation Unit", options = precipitationUnitDropdownOptions, selected = precipitationUnitInitialSelection) { selectedOption ->
-                selectedPrecipitationUnit = PrecipitationUnit.entries.find { unit -> unit.id == selectedOption.id }!!
+            Dropdown(label = "Round Location", options = roundLocationDropdownOptions, selected = roundLocationInitialSelection) { selectedOption ->
+                selectedRoundLocationSetting = RoundLocationSetting.entries.find { unit -> unit.id == selectedOption.id }!!
             }
 
-            val temperatureUnitDropdownOptions = TemperatureUnit.entries.toList().map { unit -> DropdownOption(unit.id, unit.label) }
-            val temperatureUnitInitialSelection by remember(selectedTemperatureUnit) {
-                mutableStateOf(temperatureUnitDropdownOptions.find { option -> option.id == selectedTemperatureUnit.id }!!)
-            }
-            Dropdown(label = "Temperature Unit", options = temperatureUnitDropdownOptions, selected = temperatureUnitInitialSelection) { selectedOption ->
-                selectedTemperatureUnit = TemperatureUnit.entries.find { unit -> unit.id == selectedOption.id }!!
-            }
 
             FilledTonalButton(modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp), onClick = {
-                    val newSettings = HeadwindSettings(windUnit = selectedWindUnit, precipitationUnit = selectedPrecipitationUnit,
-                        temperatureUnit = selectedTemperatureUnit,
-                        welcomeDialogAccepted = true, windDirectionIndicatorTextSetting = selectedWindDirectionIndicatorTextSetting)
+                    val newSettings = HeadwindSettings(windUnit = selectedWindUnit,
+                        welcomeDialogAccepted = true, windDirectionIndicatorTextSetting = selectedWindDirectionIndicatorTextSetting,
+                        roundLocationTo = selectedRoundLocationSetting)
 
                     coroutineScope.launch {
                         saveSettings(ctx, newSettings)
@@ -237,8 +233,6 @@ fun MainScreen() {
             confirmButton = { Button(onClick = {
                 coroutineScope.launch {
                     saveSettings(ctx, HeadwindSettings(windUnit = selectedWindUnit,
-                        precipitationUnit = selectedPrecipitationUnit,
-                        temperatureUnit = selectedTemperatureUnit,
                         welcomeDialogAccepted = true))
                 }
             }) { Text("OK") } },
