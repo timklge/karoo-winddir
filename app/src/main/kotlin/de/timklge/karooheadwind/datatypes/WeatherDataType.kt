@@ -4,8 +4,12 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.ui.unit.DpSize
+import androidx.glance.GlanceModifier
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
+import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
+import androidx.glance.layout.fillMaxSize
 import de.timklge.karooheadwind.KarooHeadwindExtension
 import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
 import de.timklge.karooheadwind.WeatherInterpretation
@@ -27,6 +31,9 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalGlanceRemoteViewsApi::class)
@@ -35,6 +42,10 @@ class WeatherDataType(
     private val applicationContext: Context
 ) : DataTypeImpl("karoo-headwind", "weather") {
     private val glance = GlanceRemoteViews()
+
+    companion object {
+        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
+    }
 
     // FIXME: Remove. Currently, the data field will permanently show "no sensor" if no data stream is provided
     override fun startStream(emitter: Emitter<StreamState>) {
@@ -77,9 +88,24 @@ class WeatherDataType(
                 .collect { (data, settings) ->
                     Log.d(KarooHeadwindExtension.TAG, "Updating weather view")
                     val interpretation = WeatherInterpretation.fromWeatherCode(data.current.weatherCode)
+                    val formattedTime = timeFormatter.format(Instant.ofEpochSecond(data.current.time))
 
                     val result = glance.compose(context, DpSize.Unspecified) {
-                        Weather(baseBitmap, interpretation, data.current.windDirection.roundToInt(), data.current.windSpeed.roundToInt(), data.current.windGusts.roundToInt())
+                        Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.CenterEnd) {
+                            Weather(baseBitmap,
+                                current = interpretation,
+                                windBearing = data.current.windDirection.roundToInt(),
+                                windSpeed = data.current.windSpeed.roundToInt(),
+                                windGusts = data.current.windGusts.roundToInt(),
+                                windSpeedUnit = settings.windUnit,
+                                precipitation = data.current.precipitation,
+                                precipitationProbability = null,
+                                precipitationUnit = settings.precipitationUnit,
+                                temperature = data.current.temperature.roundToInt(),
+                                temperatureUnit = settings.temperatureUnit,
+                                timeLabel = formattedTime
+                            )
+                        }
                     }
 
                     emitter.updateView(result.remoteViews)

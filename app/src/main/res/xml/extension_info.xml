@@ -19,6 +19,13 @@
         typeId="weather" />
 
     <DataType
+        description="@string/weather_forecast_description"
+        displayName="@string/weather_forecast"
+        graphical="true"
+        icon="@drawable/ic_launcher"
+        typeId="weatherForecast" />
+
+    <DataType
         description="@string/headwind_speed_description"
         displayName="@string/headwind_speed"
         graphical="false"
@@ -73,4 +80,11 @@
         graphical="false"
         icon="@drawable/ic_cloud"
         typeId="surfacePressure" />
+
+    <DataType
+        description="@string/temperature_description"
+        displayName="@string/temperature"
+        graphical="false"
+        icon="@drawable/thermometer"
+        typeId="temperature" />
 </ExtensionInfo>

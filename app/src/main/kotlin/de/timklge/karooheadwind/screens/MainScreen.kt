@@ -55,9 +55,9 @@ enum class WindUnit(val id: String, val label: String, val unitDisplay: String){
     KNOTS("kn", "Knots (kn)", "kn")
 }
 
-enum class PrecipitationUnit(val id: String, val label: String){
-    MILLIMETERS("mm", "Millimeters (mm)"),
-    INCH("inch", "Inch")
+enum class PrecipitationUnit(val id: String, val label: String, val unitDisplay: String){
+    MILLIMETERS("mm", "Millimeters (mm)", "mm"),
+    INCH("inch", "Inch", "in")
 }
 
 enum class WindDirectionIndicatorTextSetting(val id: String, val label: String){
@@ -66,15 +66,30 @@ enum class WindDirectionIndicatorTextSetting(val id: String, val label: String){
     NONE("none", "None")
 }
 
+enum class TemperatureUnit(val id: String, val label: String, val unitDisplay: String){
+    CELSIUS("celsius", "Celsius (°C)", "°C"),
+    FAHRENHEIT("fahrenheit", "Fahrenheit (°F)", "°F")
+}
+
 @Serializable
 data class HeadwindSettings(
     val windUnit: WindUnit = WindUnit.KILOMETERS_PER_HOUR,
     val precipitationUnit: PrecipitationUnit = PrecipitationUnit.MILLIMETERS,
+    val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
     val welcomeDialogAccepted: Boolean = false,
     val windDirectionIndicatorTextSetting: WindDirectionIndicatorTextSetting = WindDirectionIndicatorTextSetting.HEADWIND_SPEED,
 ){
     companion object {
         val defaultSettings = Json.encodeToString(HeadwindSettings())
+    }
+}
+
+@Serializable
+data class HeadwindWidgetSettings(
+    val currentForecastHourOffset: Int = 0
+){
+    companion object {
+        val defaultWidgetSettings = Json.encodeToString(HeadwindWidgetSettings())
     }
 }
 
@@ -99,6 +114,7 @@ fun MainScreen() {
 
     var selectedWindUnit by remember { mutableStateOf(WindUnit.KILOMETERS_PER_HOUR) }
     var selectedPrecipitationUnit by remember { mutableStateOf(PrecipitationUnit.MILLIMETERS) }
+    var selectedTemperatureUnit by remember { mutableStateOf(TemperatureUnit.CELSIUS) }
     var welcomeDialogVisible by remember { mutableStateOf(false) }
     var selectedWindDirectionIndicatorTextSetting by remember { mutableStateOf(WindDirectionIndicatorTextSetting.HEADWIND_SPEED) }
 
@@ -113,6 +129,7 @@ fun MainScreen() {
             selectedPrecipitationUnit = settings.precipitationUnit
             welcomeDialogVisible = !settings.welcomeDialogAccepted
             selectedWindDirectionIndicatorTextSetting = settings.windDirectionIndicatorTextSetting
+            selectedTemperatureUnit = settings.temperatureUnit
         }
     }
 
@@ -131,6 +148,14 @@ fun MainScreen() {
             .verticalScroll(rememberScrollState())
             .fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
 
+            val windDirectionIndicatorTextSettingDropdownOptions = WindDirectionIndicatorTextSetting.entries.toList().map { unit -> DropdownOption(unit.id, unit.label) }
+            val windDirectionIndicatorTextSettingSelection by remember(selectedWindDirectionIndicatorTextSetting) {
+                mutableStateOf(windDirectionIndicatorTextSettingDropdownOptions.find { option -> option.id == selectedWindDirectionIndicatorTextSetting.id }!!)
+            }
+            Dropdown(label = "Text on headwind indicator", options = windDirectionIndicatorTextSettingDropdownOptions, selected = windDirectionIndicatorTextSettingSelection) { selectedOption ->
+                selectedWindDirectionIndicatorTextSetting = WindDirectionIndicatorTextSetting.entries.find { unit -> unit.id == selectedOption.id }!!
+            }
+
             val windSpeedUnitDropdownOptions = WindUnit.entries.toList().map { unit -> DropdownOption(unit.id, unit.label) }
             val windSpeedUnitInitialSelection by remember(selectedWindUnit) {
                 mutableStateOf(windSpeedUnitDropdownOptions.find { option -> option.id == selectedWindUnit.id }!!)
@@ -147,18 +172,19 @@ fun MainScreen() {
                 selectedPrecipitationUnit = PrecipitationUnit.entries.find { unit -> unit.id == selectedOption.id }!!
             }
 
-            val windDirectionIndicatorTextSettingDropdownOptions = WindDirectionIndicatorTextSetting.entries.toList().map { unit -> DropdownOption(unit.id, unit.label) }
-            val windDirectionIndicatorTextSettingSelection by remember(selectedWindDirectionIndicatorTextSetting) {
-                mutableStateOf(windDirectionIndicatorTextSettingDropdownOptions.find { option -> option.id == selectedWindDirectionIndicatorTextSetting.id }!!)
+            val temperatureUnitDropdownOptions = TemperatureUnit.entries.toList().map { unit -> DropdownOption(unit.id, unit.label) }
+            val temperatureUnitInitialSelection by remember(selectedTemperatureUnit) {
+                mutableStateOf(temperatureUnitDropdownOptions.find { option -> option.id == selectedTemperatureUnit.id }!!)
             }
-            Dropdown(label = "Text on headwind indicator", options = windDirectionIndicatorTextSettingDropdownOptions, selected = windDirectionIndicatorTextSettingSelection) { selectedOption ->
-                selectedWindDirectionIndicatorTextSetting = WindDirectionIndicatorTextSetting.entries.find { unit -> unit.id == selectedOption.id }!!
+            Dropdown(label = "Temperature Unit", options = temperatureUnitDropdownOptions, selected = temperatureUnitInitialSelection) { selectedOption ->
+                selectedTemperatureUnit = TemperatureUnit.entries.find { unit -> unit.id == selectedOption.id }!!
             }
 
             FilledTonalButton(modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp), onClick = {
                     val newSettings = HeadwindSettings(windUnit = selectedWindUnit, precipitationUnit = selectedPrecipitationUnit,
+                        temperatureUnit = selectedTemperatureUnit,
                         welcomeDialogAccepted = true, windDirectionIndicatorTextSetting = selectedWindDirectionIndicatorTextSetting)
 
                     coroutineScope.launch {
@@ -210,7 +236,10 @@ fun MainScreen() {
         AlertDialog(onDismissRequest = { },
             confirmButton = { Button(onClick = {
                 coroutineScope.launch {
-                    saveSettings(ctx, HeadwindSettings(windUnit = selectedWindUnit, precipitationUnit = selectedPrecipitationUnit, welcomeDialogAccepted = true))
+                    saveSettings(ctx, HeadwindSettings(windUnit = selectedWindUnit,
+                        precipitationUnit = selectedPrecipitationUnit,
+                        temperatureUnit = selectedTemperatureUnit,
+                        welcomeDialogAccepted = true))
                 }
             }) { Text("OK") } },
             text = {

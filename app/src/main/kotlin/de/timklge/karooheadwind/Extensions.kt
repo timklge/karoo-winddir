@@ -7,7 +7,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import de.timklge.karooheadwind.datatypes.GpsCoordinates
 import de.timklge.karooheadwind.screens.HeadwindSettings
 import de.timklge.karooheadwind.screens.HeadwindStats
+import de.timklge.karooheadwind.screens.HeadwindWidgetSettings
 import de.timklge.karooheadwind.screens.PrecipitationUnit
+import de.timklge.karooheadwind.screens.TemperatureUnit
 import de.timklge.karooheadwind.screens.WindUnit
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.models.DataType
@@ -28,6 +30,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.scan
@@ -44,12 +47,19 @@ import kotlin.time.Duration.Companion.seconds
 val jsonWithUnknownKeys = Json { ignoreUnknownKeys = true }
 
 val settingsKey = stringPreferencesKey("settings")
+val widgetSettingsKey = stringPreferencesKey("widgetSettings")
 val currentDataKey = stringPreferencesKey("current")
 val statsKey = stringPreferencesKey("stats")
 
 suspend fun saveSettings(context: Context, settings: HeadwindSettings) {
     context.dataStore.edit { t ->
         t[settingsKey] = Json.encodeToString(settings)
+    }
+}
+
+suspend fun saveWidgetSettings(context: Context, settings: HeadwindWidgetSettings) {
+    context.dataStore.edit { t ->
+        t[widgetSettingsKey] = Json.encodeToString(settings)
     }
 }
 
@@ -88,6 +98,21 @@ fun Context.streamCurrentWeatherData(): Flow<OpenMeteoCurrentWeatherResponse> {
     }.filterNotNull().distinctUntilChanged().filter { it.current.time * 1000 >= System.currentTimeMillis() - (1000 * 60 * 60 * 12) }
 }
 
+fun Context.streamWidgetSettings(): Flow<HeadwindWidgetSettings> {
+    return dataStore.data.map { settingsJson ->
+        try {
+            if (settingsJson.contains(widgetSettingsKey)){
+                jsonWithUnknownKeys.decodeFromString<HeadwindWidgetSettings>(settingsJson[widgetSettingsKey]!!)
+            } else {
+                jsonWithUnknownKeys.decodeFromString<HeadwindWidgetSettings>(HeadwindWidgetSettings.defaultWidgetSettings)
+            }
+        } catch(e: Throwable){
+            Log.e(KarooHeadwindExtension.TAG, "Failed to read preferences", e)
+            jsonWithUnknownKeys.decodeFromString<HeadwindWidgetSettings>(HeadwindWidgetSettings.defaultWidgetSettings)
+        }
+    }.distinctUntilChanged()
+}
+
 fun Context.streamSettings(karooSystemService: KarooSystemService): Flow<HeadwindSettings> {
     return dataStore.data.map { settingsJson ->
         try {
@@ -100,8 +125,9 @@ fun Context.streamSettings(karooSystemService: KarooSystemService): Flow<Headwin
                 val preferredMetric = preferredUnits.distance == UserProfile.PreferredUnit.UnitType.METRIC
 
                 defaultSettings.copy(
-                    windUnit = if (preferredMetric) WindUnit.KILOMETERS_PER_HOUR else WindUnit.MILES_PER_HOUR,
-                    precipitationUnit = if (preferredMetric) PrecipitationUnit.MILLIMETERS else PrecipitationUnit.INCH
+                    windUnit = if (preferredUnits.distance == UserProfile.PreferredUnit.UnitType.METRIC) WindUnit.KILOMETERS_PER_HOUR else WindUnit.MILES_PER_HOUR,
+                    precipitationUnit = if (preferredMetric) PrecipitationUnit.MILLIMETERS else PrecipitationUnit.INCH,
+                    temperatureUnit = if (preferredUnits.temperature == UserProfile.PreferredUnit.UnitType.METRIC) TemperatureUnit.CELSIUS else TemperatureUnit.FAHRENHEIT
                 )
             }
         } catch(e: Throwable){
@@ -138,8 +164,8 @@ fun KarooSystemService.streamUserProfile(): Flow<UserProfile> {
 @OptIn(FlowPreview::class)
 suspend fun KarooSystemService.makeOpenMeteoHttpRequest(gpsCoordinates: GpsCoordinates, settings: HeadwindSettings): HttpResponseState.Complete {
     return callbackFlow {
-        // https://open-meteo.com/en/docs#current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=&daily=&location_mode=csv_coordinates&timeformat=unixtime&forecast_days=3
-        val url = "https://api.open-meteo.com/v1/forecast?latitude=${gpsCoordinates.lat}&longitude=${gpsCoordinates.lon}&current=weather_code,temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure&timeformat=unixtime&wind_speed_unit=${settings.windUnit.id}&precipitation_unit=${settings.precipitationUnit.id}"
+        // https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=surface_pressure,temperature_2m,relative_humidity_2m,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m&timeformat=unixtime&past_hours=1&forecast_days=1&forecast_hours=12
+        val url = "https://api.open-meteo.com/v1/forecast?latitude=${gpsCoordinates.lat}&longitude=${gpsCoordinates.lon}&current=surface_pressure,temperature_2m,relative_humidity_2m,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m&timeformat=unixtime&past_hours=0&forecast_days=1&forecast_hours=12&wind_speed_unit=${settings.windUnit.id}&precipitation_unit=${settings.precipitationUnit.id}&temperature_unit=${settings.temperatureUnit.id}"
 
         Log.d(KarooHeadwindExtension.TAG, "Http request to ${url}...")
 
@@ -202,7 +228,7 @@ fun KarooSystemService.getRelativeHeadingFlow(context: Context): Flow<Double> {
 }
 
 fun KarooSystemService.getHeadingFlow(): Flow<Double> {
-    //return flowOf(20.0)
+    // return flowOf(20.0)
 
     return streamDataFlow(DataType.Type.LOCATION)
         .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.values }

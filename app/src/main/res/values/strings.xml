@@ -19,6 +19,10 @@
     <string name="surfacePressure_description">Atmospheric pressure at surface in configured unit</string>
     <string name="weather">Weather</string>
     <string name="weather_description">Current weather conditions</string>
+    <string name="weather_forecast">Weather Forecast</string>
+    <string name="weather_forecast_description">Current hourly weather forecast</string>
     <string name="headwind_speed">Headwind speed</string>
     <string name="headwind_speed_description">Current headwind speed</string>
+    <string name="temperature">Temperature</string>
+    <string name="temperature_description">Current temperature in configured unit</string>
 </resources>

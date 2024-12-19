@@ -17,6 +17,18 @@ data class OpenMeteoData(
     @SerialName("weather_code") val weatherCode: Int,
 )
 
+@Serializable
+data class OpenMeteoForecastData(
+    @SerialName("time") val time: List<Long>,
+    @SerialName("temperature_2m") val temperature: List<Double>,
+    @SerialName("precipitation_probability") val precipitationProbability: List<Int>,
+    @SerialName("precipitation") val precipitation: List<Double>,
+    @SerialName("weather_code") val weatherCode: List<Int>,
+    @SerialName("wind_speed_10m") val windSpeed: List<Double>,
+    @SerialName("wind_direction_10m") val windDirection: List<Double>,
+    @SerialName("wind_gusts_10m") val windGusts: List<Double>,
+)
+
 enum class WeatherInterpretation {
     CLEAR, CLOUDY, RAINY, SNOWY, DRIZZLE, THUNDERSTORM, UNKNOWN;
 
@@ -43,5 +55,6 @@ data class OpenMeteoCurrentWeatherResponse(
     val longitude: Double,
     val timezone: String,
     val elevation: Double,
-    @SerialName("utc_offset_seconds") val utfOffsetSeconds: Int
+    @SerialName("utc_offset_seconds") val utfOffsetSeconds: Int,
+    @SerialName("hourly") val forecastData: OpenMeteoForecastData
 )

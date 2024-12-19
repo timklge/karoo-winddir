@@ -3,9 +3,9 @@
   "packageName": "de.timklge.karooheadwind",
   "iconUrl": "https://github.com/timklge/karoo-headwind/releases/latest/download/karoo-headwind.png",
   "latestApkUrl": "https://github.com/timklge/karoo-headwind/releases/latest/download/app-release.apk",
-  "latestVersion": "1.0.1",
-  "latestVersionCode": 3,
+  "latestVersion": "1.1",
+  "latestVersionCode": 4,
   "developer": "timklge",
   "description": "Provides headwind direction, wind speed and other weather data fields",
-  "releaseNotes": "Add wind indicator text setting and increase indicator font size. First build with new CI/CD pipeline."
+  "releaseNotes": "Add temperature datafield"
 }

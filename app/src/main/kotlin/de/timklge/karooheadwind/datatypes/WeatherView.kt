@@ -10,22 +10,29 @@ import androidx.glance.ColorFilter
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
-import androidx.glance.LocalContext
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
-import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.height
+import androidx.glance.layout.padding
 import androidx.glance.layout.width
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
 import androidx.glance.text.FontFamily
+import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
+import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import de.timklge.karooheadwind.R
 import de.timklge.karooheadwind.WeatherInterpretation
+import de.timklge.karooheadwind.screens.PrecipitationUnit
+import de.timklge.karooheadwind.screens.TemperatureUnit
+import de.timklge.karooheadwind.screens.WindUnit
+import kotlin.math.ceil
 
 fun getWeatherIcon(interpretation: WeatherInterpretation): Int {
     return when (interpretation){
@@ -42,10 +49,15 @@ fun getWeatherIcon(interpretation: WeatherInterpretation): Int {
 @OptIn(ExperimentalGlancePreviewApi::class)
 @Preview(widthDp = 200, heightDp = 150)
 @Composable
-fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int, windSpeed: Int, windGusts: Int) {
-    Column(modifier = GlanceModifier.fillMaxSize(), horizontalAlignment = Alignment.End) {
+fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int, windSpeed: Int, windGusts: Int, windSpeedUnit: WindUnit,
+            precipitation: Double, precipitationProbability: Int?, precipitationUnit: PrecipitationUnit,
+            temperature: Int, temperatureUnit: TemperatureUnit, timeLabel: String? = null) {
+
+    val fontSize = 14f
+
+    Column(modifier = GlanceModifier.fillMaxHeight().padding(2.dp), horizontalAlignment = Alignment.End) {
         Row(modifier = GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.End) {
-            val imageW = 70
+            val imageW = 60
             val imageH = (imageW * (280.0 / 400)).toInt()
             Image(
                 modifier = GlanceModifier.height(imageH.dp).width(imageW.dp),
@@ -56,7 +68,48 @@ fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int
             )
         }
 
-        Row(horizontalAlignment = Alignment.CenterHorizontally, verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (timeLabel != null){
+                Text(
+                    text = timeLabel,
+                    style = TextStyle(color = ColorProvider(Color.Black, Color.White), fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace, fontSize = TextUnit(fontSize, TextUnitType.Sp))
+                )
+
+                Spacer(modifier = GlanceModifier.width(5.dp))
+            }
+
+            Image(
+                modifier = GlanceModifier.height(20.dp).width(12.dp),
+                provider = ImageProvider(R.drawable.thermometer),
+                contentDescription = "Temperature",
+                contentScale = ContentScale.Fit,
+                colorFilter = ColorFilter.tint(ColorProvider(Color.Black, Color.White))
+            )
+
+            Text(
+                text = "${temperature}${temperatureUnit.unitDisplay}",
+                style = TextStyle(color = ColorProvider(Color.Black, Color.White), fontFamily = FontFamily.Monospace, fontSize = TextUnit(fontSize, TextUnitType.Sp), textAlign = TextAlign.Center)
+            )
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            /* Image(
+                modifier = GlanceModifier.height(20.dp).width(12.dp),
+                provider = ImageProvider(R.drawable.water_regular),
+                contentDescription = "Rain",
+                contentScale = ContentScale.Fit,
+                colorFilter = ColorFilter.tint(ColorProvider(Color.Black, Color.White))
+            ) */
+
+            val precipitationProbabilityLabel = if (precipitationProbability != null) "${precipitationProbability}%," else ""
+            Text(
+                text = "${precipitationProbabilityLabel}${ceil(precipitation).toInt().coerceIn(0..9)}",
+                style = TextStyle(color = ColorProvider(Color.Black, Color.White), fontFamily = FontFamily.Monospace, fontSize = TextUnit(fontSize, TextUnitType.Sp))
+            )
+
+            Spacer(modifier = GlanceModifier.width(5.dp))
+
             Image(
                 modifier = GlanceModifier.height(20.dp).width(12.dp),
                 provider = ImageProvider(getArrowBitmapByBearing(baseBitmap, windBearing + 180)),
@@ -65,9 +118,10 @@ fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int
                 colorFilter = ColorFilter.tint(ColorProvider(Color.Black, Color.White))
             )
 
+
             Text(
-                text = "$windSpeed,$windGusts",
-                style = TextStyle(color = ColorProvider(Color.Black, Color.White), fontFamily = FontFamily.Monospace, fontSize = TextUnit(18f, TextUnitType.Sp))
+                text = "$windSpeed,${windGusts}",
+                style = TextStyle(color = ColorProvider(Color.Black, Color.White), fontFamily = FontFamily.Monospace, fontSize = TextUnit(fontSize, TextUnitType.Sp))
             )
         }
     }
