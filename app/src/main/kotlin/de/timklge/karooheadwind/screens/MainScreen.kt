@@ -66,6 +66,11 @@ enum class WindDirectionIndicatorTextSetting(val id: String, val label: String){
     NONE("none", "None")
 }
 
+enum class WindDirectionIndicatorSetting(val id: String, val label: String){
+    HEADWIND_DIRECTION("headwind-direction", "Headwind"),
+    WIND_DIRECTION("wind-direction", "Absolute wind direction"),
+}
+
 enum class TemperatureUnit(val id: String, val label: String, val unitDisplay: String){
     CELSIUS("celsius", "Celsius (°C)", "°C"),
     FAHRENHEIT("fahrenheit", "Fahrenheit (°F)", "°F")
@@ -82,6 +87,7 @@ data class HeadwindSettings(
     val windUnit: WindUnit = WindUnit.KILOMETERS_PER_HOUR,
     val welcomeDialogAccepted: Boolean = false,
     val windDirectionIndicatorTextSetting: WindDirectionIndicatorTextSetting = WindDirectionIndicatorTextSetting.HEADWIND_SPEED,
+    val windDirectionIndicatorSetting: WindDirectionIndicatorSetting = WindDirectionIndicatorSetting.HEADWIND_DIRECTION,
     val roundLocationTo: RoundLocationSetting = RoundLocationSetting.KM_2
 ){
     companion object {
@@ -120,6 +126,7 @@ fun MainScreen() {
     var selectedWindUnit by remember { mutableStateOf(WindUnit.KILOMETERS_PER_HOUR) }
     var welcomeDialogVisible by remember { mutableStateOf(false) }
     var selectedWindDirectionIndicatorTextSetting by remember { mutableStateOf(WindDirectionIndicatorTextSetting.HEADWIND_SPEED) }
+    var selectedWindDirectionIndicatorSetting by remember { mutableStateOf(WindDirectionIndicatorSetting.HEADWIND_DIRECTION) }
     var selectedRoundLocationSetting by remember { mutableStateOf(RoundLocationSetting.KM_2) }
 
     val stats by ctx.streamStats().collectAsState(HeadwindStats())
@@ -132,6 +139,7 @@ fun MainScreen() {
             selectedWindUnit = settings.windUnit
             welcomeDialogVisible = !settings.welcomeDialogAccepted
             selectedWindDirectionIndicatorTextSetting = settings.windDirectionIndicatorTextSetting
+            selectedWindDirectionIndicatorSetting = settings.windDirectionIndicatorSetting
             selectedRoundLocationSetting = settings.roundLocationTo
         }
     }
@@ -150,6 +158,14 @@ fun MainScreen() {
             .padding(5.dp)
             .verticalScroll(rememberScrollState())
             .fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+
+            val windDirectionIndicatorSettingDropdownOptions = WindDirectionIndicatorSetting.entries.toList().map { unit -> DropdownOption(unit.id, unit.label) }
+            val windDirectionIndicatorSettingSelection by remember(selectedWindDirectionIndicatorSetting) {
+                mutableStateOf(windDirectionIndicatorSettingDropdownOptions.find { option -> option.id == selectedWindDirectionIndicatorSetting.id }!!)
+            }
+            Dropdown(label = "Wind direction indicator", options = windDirectionIndicatorSettingDropdownOptions, selected = windDirectionIndicatorSettingSelection) { selectedOption ->
+                selectedWindDirectionIndicatorSetting = WindDirectionIndicatorSetting.entries.find { unit -> unit.id == selectedOption.id }!!
+            }
 
             val windDirectionIndicatorTextSettingDropdownOptions = WindDirectionIndicatorTextSetting.entries.toList().map { unit -> DropdownOption(unit.id, unit.label) }
             val windDirectionIndicatorTextSettingSelection by remember(selectedWindDirectionIndicatorTextSetting) {
@@ -180,7 +196,9 @@ fun MainScreen() {
                 .fillMaxWidth()
                 .height(50.dp), onClick = {
                     val newSettings = HeadwindSettings(windUnit = selectedWindUnit,
-                        welcomeDialogAccepted = true, windDirectionIndicatorTextSetting = selectedWindDirectionIndicatorTextSetting,
+                        welcomeDialogAccepted = true,
+                        windDirectionIndicatorSetting = selectedWindDirectionIndicatorSetting,
+                        windDirectionIndicatorTextSetting = selectedWindDirectionIndicatorTextSetting,
                         roundLocationTo = selectedRoundLocationSetting)
 
                     coroutineScope.launch {

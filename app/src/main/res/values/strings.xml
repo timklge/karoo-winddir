@@ -2,7 +2,7 @@
     <string name="app_name">Headwind</string>
     <string name="extension_name">headwind</string>
     <string name="headwind">Headwind</string>
-    <string name="headwind_description">Current headwind direction</string>
+    <string name="headwind_description">Current headwind direction and speed</string>
     <string name="relativeHumidity">Humidity</string>
     <string name="relativeHumidity_description">Relative humidity in percent</string>
     <string name="cloudCover">Cloud cover</string>

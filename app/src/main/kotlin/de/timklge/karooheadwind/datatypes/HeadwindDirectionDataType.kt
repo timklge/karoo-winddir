@@ -9,6 +9,7 @@ import androidx.glance.appwidget.GlanceRemoteViews
 import de.timklge.karooheadwind.KarooHeadwindExtension
 import de.timklge.karooheadwind.getRelativeHeadingFlow
 import de.timklge.karooheadwind.screens.HeadwindSettings
+import de.timklge.karooheadwind.screens.WindDirectionIndicatorSetting
 import de.timklge.karooheadwind.screens.WindDirectionIndicatorTextSetting
 import de.timklge.karooheadwind.streamCurrentWeatherData
 import de.timklge.karooheadwind.streamDataFlow
@@ -54,7 +55,7 @@ class HeadwindDirectionDataType(
         }
     }
 
-    data class StreamData(val value: Double, val windSpeed: Double, val settings: HeadwindSettings)
+    data class StreamData(val value: Double, val absoluteWindDirection: Double, val windSpeed: Double, val settings: HeadwindSettings)
 
     private fun previewFlow(): Flow<StreamData> {
         return flow {
@@ -62,7 +63,7 @@ class HeadwindDirectionDataType(
                 val bearing = (0..360).random().toDouble()
                 val windSpeed = (-20..20).random()
 
-                emit(StreamData(bearing, windSpeed.toDouble(), HeadwindSettings()))
+                emit(StreamData(bearing, bearing, windSpeed.toDouble(), HeadwindSettings()))
                 delay(2_000)
             }
         }
@@ -89,7 +90,7 @@ class HeadwindDirectionDataType(
                 .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue }
                 .combine(context.streamCurrentWeatherData()) { value, data -> value to data }
                 .combine(context.streamSettings(karooSystem)) { (value, data), settings ->
-                    StreamData(value, data.current.windSpeed, settings)
+                    StreamData(value, data.current.windDirection, data.current.windSpeed, settings)
                 }
         }
 
@@ -102,7 +103,10 @@ class HeadwindDirectionDataType(
                 .collect { streamData ->
                     Log.d(KarooHeadwindExtension.TAG, "Updating headwind direction view")
                     val windSpeed = streamData.windSpeed
-                    val windDirection = streamData.value
+                    val windDirection = when (streamData.settings.windDirectionIndicatorSetting){
+                        WindDirectionIndicatorSetting.HEADWIND_DIRECTION -> streamData.value
+                        WindDirectionIndicatorSetting.WIND_DIRECTION -> streamData.absoluteWindDirection + 180
+                    }
                     val text = when (streamData.settings.windDirectionIndicatorTextSetting) {
                         WindDirectionIndicatorTextSetting.HEADWIND_SPEED -> {
                             val headwindSpeed = cos( (windDirection + 180) * Math.PI / 180.0) * windSpeed
