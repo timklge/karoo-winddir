@@ -131,6 +131,8 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.1") {
                         val data = jsonWithUnknownKeys.decodeFromString<OpenMeteoCurrentWeatherResponse>(responseString)
 
                         saveCurrentData(applicationContext, data)
+                        saveWidgetSettings(applicationContext, HeadwindWidgetSettings(currentForecastHourOffset = 0))
+
                         Log.d(TAG, "Got updated weather info: $data")
                     } catch(e: Exception){
                         Log.e(TAG, "Failed to read current weather data", e)
