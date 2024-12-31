@@ -92,7 +92,7 @@ fun Context.streamCurrentWeatherData(): Flow<OpenMeteoCurrentWeatherResponse> {
             val data = settingsJson[currentDataKey]
             data?.let { d -> jsonWithUnknownKeys.decodeFromString<OpenMeteoCurrentWeatherResponse>(d) }
         } catch (e: Throwable) {
-            Log.e(KarooHeadwindExtension.TAG, "Failed to read preferences", e)
+            Log.e(KarooHeadwindExtension.TAG, "Failed to read weather data", e)
             null
         }
     }.filterNotNull().distinctUntilChanged().filter { it.current.time * 1000 >= System.currentTimeMillis() - (1000 * 60 * 60 * 12) }
@@ -107,7 +107,7 @@ fun Context.streamWidgetSettings(): Flow<HeadwindWidgetSettings> {
                 jsonWithUnknownKeys.decodeFromString<HeadwindWidgetSettings>(HeadwindWidgetSettings.defaultWidgetSettings)
             }
         } catch(e: Throwable){
-            Log.e(KarooHeadwindExtension.TAG, "Failed to read preferences", e)
+            Log.e(KarooHeadwindExtension.TAG, "Failed to read widget preferences", e)
             jsonWithUnknownKeys.decodeFromString<HeadwindWidgetSettings>(HeadwindWidgetSettings.defaultWidgetSettings)
         }
     }.distinctUntilChanged()

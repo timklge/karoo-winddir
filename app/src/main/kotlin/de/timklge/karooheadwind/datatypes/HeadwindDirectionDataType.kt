@@ -95,12 +95,7 @@ class HeadwindDirectionDataType(
         }
 
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
-            flow.onCompletion {
-                    // Clear view on completion
-                    val result = glance.compose(context, DpSize.Unspecified) { }
-                    emitter.updateView(result.remoteViews)
-                }
-                .collect { streamData ->
+            flow.collect { streamData ->
                     Log.d(KarooHeadwindExtension.TAG, "Updating headwind direction view")
                     val windSpeed = streamData.windSpeed
                     val windDirection = when (streamData.settings.windDirectionIndicatorSetting){

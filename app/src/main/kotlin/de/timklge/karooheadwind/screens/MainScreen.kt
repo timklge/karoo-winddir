@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.timklge.karooheadwind.datatypes.GpsCoordinates
 import de.timklge.karooheadwind.getGpsCoordinateFlow
 import de.timklge.karooheadwind.saveSettings
@@ -130,7 +131,7 @@ fun MainScreen() {
     var selectedRoundLocationSetting by remember { mutableStateOf(RoundLocationSetting.KM_2) }
 
     val stats by ctx.streamStats().collectAsState(HeadwindStats())
-    val location by karooSystem.getGpsCoordinateFlow(ctx).collectAsState(initial = null)
+    val location by karooSystem.getGpsCoordinateFlow(ctx).collectAsStateWithLifecycle(null)
 
     var savedDialogVisible by remember { mutableStateOf(false) }
 

@@ -86,11 +86,6 @@ class WeatherDataType(
             context.streamCurrentWeatherData()
                 .combine(context.streamSettings(karooSystem)) { data, settings -> StreamData(data, settings) }
                 .combine(karooSystem.streamUserProfile()) { data, profile -> data.copy(profile = profile) }
-                .onCompletion {
-                    // Clear view on completion
-                    val result = glance.compose(context, DpSize.Unspecified) { }
-                    emitter.updateView(result.remoteViews)
-                }
                 .collect { (data, settings, userProfile) ->
                     Log.d(KarooHeadwindExtension.TAG, "Updating weather view")
                     val interpretation = WeatherInterpretation.fromWeatherCode(data.current.weatherCode)
