@@ -2,8 +2,25 @@ package de.timklge.karooheadwind
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.glance.GlanceModifier
+import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
+import androidx.glance.appwidget.GlanceRemoteViews
+import androidx.glance.appwidget.RemoteViewsCompositionResult
+import androidx.glance.color.ColorProvider
+import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
+import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.padding
+import androidx.glance.text.Text
+import androidx.glance.text.TextAlign
+import androidx.glance.text.TextStyle
 import de.timklge.karooheadwind.datatypes.GpsCoordinates
 import de.timklge.karooheadwind.screens.HeadwindSettings
 import de.timklge.karooheadwind.screens.HeadwindStats
@@ -28,6 +45,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -86,7 +104,30 @@ fun KarooSystemService.streamDataFlow(dataTypeId: String): Flow<StreamState> {
     }
 }
 
-fun Context.streamCurrentWeatherData(): Flow<OpenMeteoCurrentWeatherResponse> {
+@OptIn(ExperimentalGlanceRemoteViewsApi::class)
+suspend fun getErrorWidget(glance: GlanceRemoteViews, context: Context, settings: HeadwindSettings?, headingResponse: HeadingResponse?): RemoteViewsCompositionResult {
+    return glance.compose(context, DpSize.Unspecified) {
+        Box(modifier = GlanceModifier.fillMaxSize().padding(5.dp), contentAlignment = Alignment.Center) {
+            val errorMessage = if (settings?.welcomeDialogAccepted == false) {
+                "Headwind app not set up"
+            } else if (headingResponse is HeadingResponse.NoGps){
+                "No GPS signal"
+            } else if (headingResponse is HeadingResponse.NoWeatherData) {
+                "No weather data"
+            } else {
+                "Unknown error"
+            }
+
+            Log.d(KarooHeadwindExtension.TAG, "Error widget: $errorMessage")
+
+            Text(text = errorMessage, style = TextStyle(fontSize = TextUnit(16f, TextUnitType.Sp),
+                textAlign = TextAlign.Center,
+                color = ColorProvider(Color.Black, Color.White)))
+        }
+    }
+}
+
+fun Context.streamCurrentWeatherData(): Flow<OpenMeteoCurrentWeatherResponse?> {
     return dataStore.data.map { settingsJson ->
         try {
             val data = settingsJson[currentDataKey]
@@ -95,7 +136,13 @@ fun Context.streamCurrentWeatherData(): Flow<OpenMeteoCurrentWeatherResponse> {
             Log.e(KarooHeadwindExtension.TAG, "Failed to read weather data", e)
             null
         }
-    }.filterNotNull().distinctUntilChanged().filter { it.current.time * 1000 >= System.currentTimeMillis() - (1000 * 60 * 60 * 12) }
+    }.distinctUntilChanged().map { response ->
+        if (response != null && response.current.time * 1000 >= System.currentTimeMillis() - (1000 * 60 * 60 * 12)){
+            response
+        } else {
+            null
+        }
+    }
 }
 
 fun Context.streamWidgetSettings(): Flow<HeadwindWidgetSettings> {
@@ -212,63 +259,95 @@ fun signedAngleDifference(angle1: Double, angle2: Double): Double {
     return sign * diff
 }
 
-fun KarooSystemService.getRelativeHeadingFlow(context: Context): Flow<Double> {
+sealed class HeadingResponse {
+    data object NoGps: HeadingResponse()
+    data object NoWeatherData: HeadingResponse()
+    data class Value(val diff: Double): HeadingResponse()
+}
+
+fun KarooSystemService.getRelativeHeadingFlow(context: Context): Flow<HeadingResponse> {
     val currentWeatherData = context.streamCurrentWeatherData()
 
     return getHeadingFlow()
-        .filter { it >= 0 }
         .combine(currentWeatherData) { bearing, data -> bearing to data }
         .map { (bearing, data) ->
-            val windBearing = data.current.windDirection + 180
-            val diff = signedAngleDifference(bearing, windBearing)
-            Log.d(KarooHeadwindExtension.TAG, "Wind bearing: $bearing vs $windBearing => $diff")
+            when {
+                bearing is HeadingResponse.Value && data != null -> {
+                    val windBearing = data.current.windDirection + 180
+                    val diff = signedAngleDifference(bearing.diff, windBearing)
 
-            diff
+                    Log.d(KarooHeadwindExtension.TAG, "Wind bearing: $bearing vs $windBearing => $diff")
+
+                    HeadingResponse.Value(diff)
+                }
+                bearing is HeadingResponse.NoGps -> HeadingResponse.NoGps
+                bearing is HeadingResponse.NoWeatherData || data == null -> HeadingResponse.NoWeatherData
+                else -> bearing
+            }
         }
 }
 
-fun KarooSystemService.getHeadingFlow(): Flow<Double> {
-    // return flowOf(20.0)
+fun KarooSystemService.getHeadingFlow(): Flow<HeadingResponse> {
+    // return flowOf(HeadingResponse.Value(20.0))
 
     return streamDataFlow(DataType.Type.LOCATION)
-        .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.values }
+        .map { (it as? StreamState.Streaming)?.dataPoint?.values }
         .map { values ->
-            val heading = values[DataType.Field.LOC_BEARING]
+            val heading = values?.get(DataType.Field.LOC_BEARING)
             Log.d(KarooHeadwindExtension.TAG, "Updated gps bearing: $heading")
-            heading ?: 0.0
+            val headingValue = heading?.let { HeadingResponse.Value(it) }
+
+            headingValue ?: HeadingResponse.NoGps
         }
         .distinctUntilChanged()
-        .scan(emptyList<Double>()) { acc, value -> /* Average over 3 values */
+        .scan(emptyList<HeadingResponse>()) { acc, value -> /* Average over 3 values */
+            if (value !is HeadingResponse.Value) return@scan listOf(value)
+
             val newAcc = acc + value
             if (newAcc.size > 3) newAcc.drop(1) else newAcc
         }
-        .map { it.average() }
+        .map { data ->
+            if (data.isEmpty()) return@map HeadingResponse.NoGps
+
+            if (data.all { it is HeadingResponse.Value }) {
+                val avg = data.mapNotNull { (it as? HeadingResponse.Value)?.diff }.average()
+                HeadingResponse.Value(avg)
+            } else {
+                data.first()
+            }
+        }
 }
 
 @OptIn(FlowPreview::class)
-fun KarooSystemService.getGpsCoordinateFlow(context: Context): Flow<GpsCoordinates> {
+fun KarooSystemService.getGpsCoordinateFlow(context: Context): Flow<GpsCoordinates?> {
     // return flowOf(GpsCoordinates(52.5164069,13.3784))
 
     return streamDataFlow(DataType.Type.LOCATION)
-        .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.values }
-        .mapNotNull { values ->
-            val lat = values[DataType.Field.LOC_LATITUDE]
-            val lon = values[DataType.Field.LOC_LONGITUDE]
+        .map { (it as? StreamState.Streaming)?.dataPoint?.values }
+        .map { values ->
+            val lat = values?.get(DataType.Field.LOC_LATITUDE)
+            val lon = values?.get(DataType.Field.LOC_LONGITUDE)
 
             if (lat != null && lon != null){
-                Log.d(KarooHeadwindExtension.TAG, "Updated gps coords: $lat $lon")
+                Log.d(KarooHeadwindExtension.TAG, "Updated gps coordinates: $lat $lon")
                 GpsCoordinates(lat, lon)
             } else {
-                Log.e(KarooHeadwindExtension.TAG, "Missing gps values: $values")
+                Log.w(KarooHeadwindExtension.TAG, "Gps unavailable: $values")
                 null
             }
         }
         .combine(context.streamSettings(this)) { gps, settings -> gps to settings }
         .map { (gps, settings) ->
-            val rounded = gps.round(settings.roundLocationTo.km.toDouble())
-            Log.d(KarooHeadwindExtension.TAG, "Round location to ${settings.roundLocationTo.km} - $rounded")
+            val rounded = gps?.round(settings.roundLocationTo.km.toDouble())
+            if (rounded != null) Log.d(KarooHeadwindExtension.TAG, "Round location to ${settings.roundLocationTo.km} - $rounded")
             rounded
         }
-        .distinctUntilChanged { old, new -> old.distanceTo(new).absoluteValue < 0.001 }
+        .distinctUntilChanged { old, new ->
+            if (old != null && new != null) {
+                old.distanceTo(new).absoluteValue < 0.001
+            } else {
+                old == new
+            }
+        }
         .debounce(Duration.ofSeconds(10))
 }

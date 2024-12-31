@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
-class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.2") {
+class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.3") {
     companion object {
         const val TAG = "karoo-headwind"
     }
@@ -62,7 +62,7 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.2") {
         )
     }
 
-    data class StreamData(val settings: HeadwindSettings, val gps: GpsCoordinates,
+    data class StreamData(val settings: HeadwindSettings, val gps: GpsCoordinates?,
                           val profile: UserProfile? = null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -80,7 +80,7 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.2") {
 
             val gpsFlow = karooSystem
                 .getGpsCoordinateFlow(this@KarooHeadwindExtension)
-                .transformLatest { value: GpsCoordinates ->
+                .transformLatest { value: GpsCoordinates? ->
                     while(true){
                         emit(value)
                         delay(1.hours)
@@ -99,6 +99,10 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.2") {
                     } catch(e: Exception){
                         Log.e(TAG, "Failed to read stats", e)
                         HeadwindStats()
+                    }
+
+                    if (gps == null){
+                        error("No GPS coordinates available")
                     }
 
                     val response = karooSystem.makeOpenMeteoHttpRequest(gps, settings, profile)
