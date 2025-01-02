@@ -126,7 +126,7 @@ class WeatherForecastDataType(
                 .combine(context.streamSettings(karooSystem)) { data, settings -> StreamData(data, settings) }
                 .combine(karooSystem.streamUserProfile()) { data, profile -> data.copy(profile = profile) }
                 .combine(context.streamWidgetSettings()) { data, widgetSettings -> data.copy(widgetSettings = widgetSettings) }
-                .combine(karooSystem.getHeadingFlow()) { data, headingResponse -> data.copy(headingResponse = headingResponse) }
+                .combine(karooSystem.getHeadingFlow(context)) { data, headingResponse -> data.copy(headingResponse = headingResponse) }
                 .collect { (data, settings, widgetSettings, userProfile, headingResponse) ->
                     Log.d(KarooHeadwindExtension.TAG, "Updating weather forecast view")
 

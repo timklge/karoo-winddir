@@ -40,8 +40,10 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.3") {
         const val TAG = "karoo-headwind"
     }
 
+
     lateinit var karooSystem: KarooSystemService
 
+    private var updateLastKnownGpsJob: Job? = null
     private var serviceJob: Job? = null
 
     override val types by lazy {
@@ -70,6 +72,10 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.3") {
         super.onCreate()
 
         karooSystem = KarooSystemService(applicationContext)
+
+        updateLastKnownGpsJob = CoroutineScope(Dispatchers.IO).launch {
+            karooSystem.updateLastKnownGps(this@KarooHeadwindExtension)
+        }
 
         serviceJob = CoroutineScope(Dispatchers.IO).launch {
             karooSystem.connect { connected ->

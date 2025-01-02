@@ -66,10 +66,9 @@ class WeatherDataType(
             val currentWeatherData = applicationContext.streamCurrentWeatherData()
 
             currentWeatherData
-                .filterNotNull()
                 .collect { data ->
-                    Log.d(KarooHeadwindExtension.TAG, "Wind code: ${data.current.weatherCode}")
-                    emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to data.current.weatherCode.toDouble()))))
+                    Log.d(KarooHeadwindExtension.TAG, "Wind code: ${data?.current?.weatherCode}")
+                    emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to (data?.current?.weatherCode?.toDouble() ?: 0.0)))))
                 }
         }
         emitter.setCancellable {
@@ -96,7 +95,7 @@ class WeatherDataType(
             context.streamCurrentWeatherData()
                 .combine(context.streamSettings(karooSystem)) { data, settings -> StreamData(data, settings) }
                 .combine(karooSystem.streamUserProfile()) { data, profile -> data.copy(profile = profile) }
-                .combine(karooSystem.getHeadingFlow()) { data, heading -> data.copy(headingResponse = heading) }
+                .combine(karooSystem.getHeadingFlow(context)) { data, heading -> data.copy(headingResponse = heading) }
                 .collect { (data, settings, userProfile, headingResponse) ->
                     Log.d(KarooHeadwindExtension.TAG, "Updating weather view")
 
