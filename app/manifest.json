@@ -7,5 +7,5 @@
   "latestVersionCode": 7,
   "developer": "timklge",
   "description": "Provides headwind direction, wind speed and other weather data fields",
-  "releaseNotes": "Add hourly forecast and temperature datafields. Show error message in fields if no weather data or gps is available."
+  "releaseNotes": "Adds hourly forecast. Shows error message in fields if weather data or gps are unavailable and remembers last known gps position."
 }

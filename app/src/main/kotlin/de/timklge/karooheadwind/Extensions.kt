@@ -39,13 +39,13 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -124,10 +124,8 @@ suspend fun getErrorWidget(glance: GlanceRemoteViews, context: Context, settings
                 "Headwind app not set up"
             } else if (headingResponse is HeadingResponse.NoGps){
                 "No GPS signal"
-            } else if (headingResponse is HeadingResponse.NoWeatherData) {
-                "No weather data"
             } else {
-                "Unknown error"
+                "Weather data download failed"
             }
 
             Log.d(KarooHeadwindExtension.TAG, "Error widget: $errorMessage")
@@ -207,7 +205,7 @@ fun Context.streamStats(): Flow<HeadwindStats> {
 }
 
 suspend fun Context.getLastKnownPosition(): GpsCoordinates? {
-    val settingsJson =  dataStore.data.first()
+    val settingsJson = dataStore.data.first()
 
     try {
         val lastKnownPositionString = settingsJson[lastKnownPositionKey] ?: return null
@@ -334,47 +332,61 @@ fun KarooSystemService.getHeadingFlow(context: Context): Flow<HeadingResponse> {
             if (newAcc.size > 3) newAcc.drop(1) else newAcc
         }
         .map { data ->
-            if (data.isEmpty()) return@map HeadingResponse.NoGps
+            Log.i(KarooHeadwindExtension.TAG, "Heading value: $data")
 
-            if (data.all { it is HeadingResponse.Value }) {
-                val avg = data.mapNotNull { (it as? HeadingResponse.Value)?.diff }.average()
-                HeadingResponse.Value(avg)
-            } else {
-                data.first()
-            }
+            if (data.isEmpty()) return@map HeadingResponse.NoGps
+            if (data.firstOrNull() !is HeadingResponse.Value) return@map data.first()
+
+            val avgValues = data.mapNotNull { (it as? HeadingResponse.Value)?.diff }
+
+            if (avgValues.isEmpty()) return@map HeadingResponse.NoGps
+
+            val avg = avgValues.average()
+
+            HeadingResponse.Value(avg)
         }
 }
 
 fun <T> concatenate(vararg flows: Flow<T>) = flow {
-    var hadNullValue = false
-
     for (flow in flows) {
-        flow.collect { value ->
-            if (!hadNullValue) {
-                emit(value)
-                if (value == null) hadNullValue = true
-            } else {
-                if (value != null) emit(value)
-            }
+        emitAll(flow)
+    }
+}
+
+fun<T> Flow<T>.dropNullsIfNullEncountered(): Flow<T?> = flow {
+    var hadValue = false
+
+    collect { value ->
+        if (!hadValue) {
+            emit(value)
+            if (value != null) hadValue = true
+        } else {
+            if (value != null) emit(value)
         }
     }
 }
 
 @OptIn(FlowPreview::class)
 suspend fun KarooSystemService.updateLastKnownGps(context: Context) {
-    getGpsCoordinateFlow(context)
-        .filterNotNull()
-        .throttle(60 * 1_000) // Only update last known gps position once every minute
-        .collect { gps ->
-            saveLastKnownPosition(context, gps)
-        }
+    while (true) {
+        getGpsCoordinateFlow(context)
+            .filterNotNull()
+            .throttle(60 * 1_000) // Only update last known gps position once every minute
+            .collect { gps ->
+                saveLastKnownPosition(context, gps)
+            }
+        delay(1_000)
+    }
 }
 
 @OptIn(FlowPreview::class)
 fun KarooSystemService.getGpsCoordinateFlow(context: Context): Flow<GpsCoordinates?> {
     // return flowOf(GpsCoordinates(52.5164069,13.3784))
 
-    val initialFlow = flow<GpsCoordinates> { context.getLastKnownPosition() }
+    val initialFlow = flow {
+        val lastKnownPosition = context.getLastKnownPosition()
+        if (lastKnownPosition != null) emit(lastKnownPosition)
+    }
 
     val gpsFlow = streamDataFlow(DataType.Type.LOCATION)
         .map { (it as? StreamState.Streaming)?.dataPoint?.values }
@@ -384,10 +396,10 @@ fun KarooSystemService.getGpsCoordinateFlow(context: Context): Flow<GpsCoordinat
             val bearing = values?.get(DataType.Field.LOC_BEARING)
 
             if (lat != null && lon != null){
-                Log.d(KarooHeadwindExtension.TAG, "Updated gps coordinates: $lat $lon")
+                // Log.d(KarooHeadwindExtension.TAG, "Updated gps coordinates: $lat $lon")
                 GpsCoordinates(lat, lon, bearing)
             } else {
-                Log.w(KarooHeadwindExtension.TAG, "Gps unavailable: $values")
+                // Log.w(KarooHeadwindExtension.TAG, "Gps unavailable: $values")
                 null
             }
         }
@@ -397,16 +409,7 @@ fun KarooSystemService.getGpsCoordinateFlow(context: Context): Flow<GpsCoordinat
     return concatenatedFlow
         .combine(context.streamSettings(this)) { gps, settings -> gps to settings }
         .map { (gps, settings) ->
-            val rounded = gps?.round(settings.roundLocationTo.km.toDouble())
-            if (rounded != null) Log.d(KarooHeadwindExtension.TAG, "Round location to ${settings.roundLocationTo.km} - $rounded")
-            rounded
+            gps?.round(settings.roundLocationTo.km.toDouble())
         }
-        .distinctUntilChanged { old, new ->
-            if (old != null && new != null) {
-                old.distanceTo(new).absoluteValue < 0.001
-            } else {
-                old == new
-            }
-        }
-        .debounce(Duration.ofSeconds(10))
+        .dropNullsIfNullEncountered()
 }

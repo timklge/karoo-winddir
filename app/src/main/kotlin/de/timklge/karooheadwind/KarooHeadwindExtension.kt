@@ -23,15 +23,20 @@ import io.hammerhead.karooext.models.UserProfile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.time.debounce
+import java.time.Duration
+import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
@@ -67,7 +72,7 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.3") {
     data class StreamData(val settings: HeadwindSettings, val gps: GpsCoordinates?,
                           val profile: UserProfile? = null)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     override fun onCreate() {
         super.onCreate()
 
@@ -86,6 +91,14 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.3") {
 
             val gpsFlow = karooSystem
                 .getGpsCoordinateFlow(this@KarooHeadwindExtension)
+                .distinctUntilChanged { old, new ->
+                    if (old != null && new != null) {
+                        old.distanceTo(new).absoluteValue < 0.001
+                    } else {
+                        old == new
+                    }
+                }
+                .debounce(Duration.ofSeconds(5))
                 .transformLatest { value: GpsCoordinates? ->
                     while(true){
                         emit(value)
