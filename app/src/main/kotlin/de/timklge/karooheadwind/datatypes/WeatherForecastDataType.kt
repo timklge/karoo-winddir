@@ -26,7 +26,6 @@ import de.timklge.karooheadwind.HeadingResponse
 import de.timklge.karooheadwind.KarooHeadwindExtension
 import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
 import de.timklge.karooheadwind.WeatherInterpretation
-import de.timklge.karooheadwind.getErrorWidget
 import de.timklge.karooheadwind.getHeadingFlow
 import de.timklge.karooheadwind.saveWidgetSettings
 import de.timklge.karooheadwind.screens.HeadwindSettings
