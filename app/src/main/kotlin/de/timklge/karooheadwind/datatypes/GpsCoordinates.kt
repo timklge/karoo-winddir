@@ -9,7 +9,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 @Serializable
-data class GpsCoordinates(val lat: Double, val lon: Double){
+data class GpsCoordinates(val lat: Double, val lon: Double, val bearing: Double? = 0.0){
     companion object {
         private fun roundDegrees(degrees: Double, km: Double): Double {
             val nkm = degrees * 111

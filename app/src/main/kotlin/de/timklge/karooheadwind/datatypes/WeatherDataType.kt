@@ -10,9 +10,11 @@ import androidx.glance.appwidget.GlanceRemoteViews
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxSize
+import de.timklge.karooheadwind.HeadingResponse
 import de.timklge.karooheadwind.KarooHeadwindExtension
 import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
 import de.timklge.karooheadwind.WeatherInterpretation
+import de.timklge.karooheadwind.getHeadingFlow
 import de.timklge.karooheadwind.screens.HeadwindSettings
 import de.timklge.karooheadwind.screens.PrecipitationUnit
 import de.timklge.karooheadwind.screens.TemperatureUnit
@@ -33,7 +35,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -58,8 +59,8 @@ class WeatherDataType(
 
             currentWeatherData
                 .collect { data ->
-                    Log.d(KarooHeadwindExtension.TAG, "Wind code: ${data.current.weatherCode}")
-                    emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to data.current.weatherCode.toDouble()))))
+                    Log.d(KarooHeadwindExtension.TAG, "Wind code: ${data?.current?.weatherCode}")
+                    emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to (data?.current?.weatherCode?.toDouble() ?: 0.0)))))
                 }
         }
         emitter.setCancellable {
@@ -79,15 +80,23 @@ class WeatherDataType(
             de.timklge.karooheadwind.R.drawable.arrow_0
         )
 
-        data class StreamData(val data: OpenMeteoCurrentWeatherResponse, val settings: HeadwindSettings,
-            val profile: UserProfile? = null)
+        data class StreamData(val data: OpenMeteoCurrentWeatherResponse?, val settings: HeadwindSettings,
+            val profile: UserProfile? = null, val headingResponse: HeadingResponse? = null)
 
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
             context.streamCurrentWeatherData()
                 .combine(context.streamSettings(karooSystem)) { data, settings -> StreamData(data, settings) }
                 .combine(karooSystem.streamUserProfile()) { data, profile -> data.copy(profile = profile) }
-                .collect { (data, settings, userProfile) ->
+                .combine(karooSystem.getHeadingFlow(context)) { data, heading -> data.copy(headingResponse = heading) }
+                .collect { (data, settings, userProfile, headingResponse) ->
                     Log.d(KarooHeadwindExtension.TAG, "Updating weather view")
+
+                    if (data == null){
+                        emitter.updateView(getErrorWidget(glance, context, settings, headingResponse).remoteViews)
+
+                        return@collect
+                    }
+
                     val interpretation = WeatherInterpretation.fromWeatherCode(data.current.weatherCode)
                     val formattedTime = timeFormatter.format(Instant.ofEpochSecond(data.current.time))
 

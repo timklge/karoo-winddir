@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ExtensionInfo
     displayName="@string/extension_name"
-    icon="@drawable/ic_launcher"
+    icon="@drawable/wind"
     id="karoo-headwind"
     scansDevices="false">
     <DataType
         description="@string/headwind_description"
         displayName="@string/headwind"
         graphical="true"
-        icon="@drawable/ic_launcher"
+        icon="@drawable/wind"
         typeId="headwind" />
 
     <DataType
         description="@string/weather_description"
         displayName="@string/weather"
         graphical="true"
-        icon="@drawable/ic_launcher"
+        icon="@drawable/wind"
         typeId="weather" />
 
     <DataType
         description="@string/weather_forecast_description"
         displayName="@string/weather_forecast"
         graphical="true"
-        icon="@drawable/ic_launcher"
+        icon="@drawable/wind"
         typeId="weatherForecast" />
 
     <DataType
         description="@string/headwind_speed_description"
         displayName="@string/headwind_speed"
         graphical="false"
-        icon="@drawable/ic_launcher"
+        icon="@drawable/wind"
         typeId="headwindSpeed" />
 
     <DataType
@@ -50,21 +50,21 @@
         description="@string/windSpeed_description"
         displayName="@string/windSpeed"
         graphical="false"
-        icon="@drawable/ic_launcher"
+        icon="@drawable/wind"
         typeId="windSpeed" />
 
     <DataType
         description="@string/windGusts_description"
         displayName="@string/windGusts"
         graphical="false"
-        icon="@drawable/ic_launcher"
+        icon="@drawable/wind"
         typeId="windGusts" />
 
     <DataType
         description="@string/windDirection_description"
         displayName="@string/windDirection"
         graphical="true"
-        icon="@drawable/ic_launcher"
+        icon="@drawable/wind"
         typeId="windDirection" />
 
     <DataType
