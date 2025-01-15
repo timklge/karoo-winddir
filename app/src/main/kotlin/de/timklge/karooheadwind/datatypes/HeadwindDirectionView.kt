@@ -18,6 +18,8 @@ import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
+import androidx.glance.layout.Row
+import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.preview.ExperimentalGlancePreviewApi
@@ -75,36 +77,47 @@ fun HeadwindDirection(baseBitmap: Bitmap, bearing: Int, fontSize: Int, overlayTe
             horizontal = Alignment.Horizontal.CenterHorizontally,
         ),
     ) {
-        Image(
-            modifier = GlanceModifier.fillMaxSize(),
-            provider = ImageProvider(getArrowBitmapByBearing(baseBitmap, bearing)),
-            contentDescription = "Relative wind direction indicator",
-            contentScale = ContentScale.Fit,
-            colorFilter = ColorFilter.tint(ColorProvider(dayColor, nightColor))
-        )
-
         if (overlayText.isNotEmpty()){
             if (overlaySubText == null){
+                Image(
+                    modifier = GlanceModifier.fillMaxSize(),
+                    provider = ImageProvider(getArrowBitmapByBearing(baseBitmap, bearing)),
+                    contentDescription = "Relative wind direction indicator",
+                    contentScale = ContentScale.Fit,
+                    colorFilter = ColorFilter.tint(ColorProvider(dayColor, nightColor))
+                )
+
                 Text(
                     overlayText,
                     style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.6 * fontSize).sp, fontFamily = FontFamily.Monospace),
                     modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
                 )
             } else {
-                Column(horizontalAlignment = Alignment.Horizontal.CenterHorizontally) {
-                    Text(
-                        overlayText,
-                        style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.5 * fontSize).sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                        modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
-                    )
+                Row(modifier = GlanceModifier.fillMaxSize()) {
+                    Column(modifier = GlanceModifier.defaultWeight()){
+                        Image(
+                            provider = ImageProvider(getArrowBitmapByBearing(baseBitmap, bearing)),
+                            contentDescription = "Relative wind direction indicator",
+                            contentScale = ContentScale.Fit,
+                            colorFilter = ColorFilter.tint(ColorProvider(dayColor, nightColor))
+                        )
+                    }
 
-                    Text(
-                        overlaySubText,
-                        style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.35 * fontSize).sp, fontFamily = FontFamily.Monospace),
-                        modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
-                    )
+                    Column(modifier = GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.Horizontal.End) {
+                        Text(
+                            overlayText,
+                            style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.5 * fontSize).sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
+                            modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
+                        )
+
+                        Text(
+                            overlaySubText,
+                            style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.35 * fontSize).sp, fontFamily = FontFamily.Monospace),
+                            modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
+                        )
+                    }
+
                 }
-
             }
         }
     }

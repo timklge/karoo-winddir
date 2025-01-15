@@ -112,7 +112,7 @@ class TailwindAndRideSpeedDataType(
 
         val baseBitmap = BitmapFactory.decodeResource(
             context.resources,
-            de.timklge.karooheadwind.R.drawable.circle
+            R.drawable.arrow_0
         )
 
         val configJob = CoroutineScope(Dispatchers.IO).launch {
