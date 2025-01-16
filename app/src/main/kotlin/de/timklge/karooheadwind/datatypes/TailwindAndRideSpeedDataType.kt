@@ -170,16 +170,23 @@ class TailwindAndRideSpeedDataType(
                     WindDirectionIndicatorTextSetting.NONE -> ""
                 }
 
-                val windSpeedInKmh = if (streamData.isImperial == true){
-                    windSpeed / 2.23694 * 3.6
-                } else {
-                    windSpeed
+                var dayColor = Color(ContextCompat.getColor(context, R.color.black))
+                var nightColor = Color(ContextCompat.getColor(context, R.color.white))
+
+                if (streamData.settings.windDirectionIndicatorTextSetting == WindDirectionIndicatorTextSetting.HEADWIND_SPEED) {
+                    val headwindSpeed = cos( (windDirection + 180) * Math.PI / 180.0) * windSpeed
+                    val windSpeedInKmh = if (streamData.isImperial == true){
+                        headwindSpeed / 2.23694 * 3.6
+                    } else {
+                        headwindSpeed
+                    }
+                    dayColor = interpolateWindColor(windSpeedInKmh, false, context)
+                    nightColor = interpolateWindColor(windSpeedInKmh, true, context)
                 }
 
                 val result = glance.compose(context, DpSize.Unspecified) {
                     HeadwindDirection(baseBitmap, windDirection.roundToInt(), config.textSize, text, subtextWithSign,
-                        interpolateWindColor(windSpeedInKmh, false, context),
-                        interpolateWindColor(windSpeedInKmh, true, context))
+                        dayColor, nightColor)
                 }
 
                 emitter.updateView(result.remoteViews)
