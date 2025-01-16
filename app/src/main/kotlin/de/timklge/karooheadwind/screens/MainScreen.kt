@@ -222,16 +222,19 @@ fun MainScreen() {
             if (stats.failedWeatherRequest != null && (stats.lastSuccessfulWeatherRequest == null || stats.failedWeatherRequest!! > stats.lastSuccessfulWeatherRequest!!)){
                 val successfulTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(stats.lastSuccessfulWeatherRequest ?: 0), ZoneOffset.systemDefault()).toLocalTime().truncatedTo(
                     ChronoUnit.SECONDS)
+                val successfulDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(stats.lastSuccessfulWeatherRequest ?: 0), ZoneOffset.systemDefault()).toLocalDate()
                 val lastTryTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(stats.failedWeatherRequest ?: 0), ZoneOffset.systemDefault()).toLocalTime().truncatedTo(
                     ChronoUnit.SECONDS)
+                val lastTryDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(stats.failedWeatherRequest ?: 0), ZoneOffset.systemDefault()).toLocalDate()
 
-                val successStr = if(lastPosition != null) " Last data received at ${successfulTime}${lastPositionDistanceStr}." else ""
-                Text(modifier = Modifier.padding(5.dp), text = "Failed to update weather data; last try at ${lastTryTime}.${successStr}")
+                val successStr = if(lastPosition != null) " Last data received at $successfulDate ${successfulTime}${lastPositionDistanceStr}." else ""
+                Text(modifier = Modifier.padding(5.dp), text = "Failed to update weather data; last try at $lastTryDate ${lastTryTime}.${successStr}")
             } else if(stats.lastSuccessfulWeatherRequest != null){
+                val localDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(stats.lastSuccessfulWeatherRequest ?: 0), ZoneOffset.systemDefault()).toLocalDate()
                 val localTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(stats.lastSuccessfulWeatherRequest ?: 0), ZoneOffset.systemDefault()).toLocalTime().truncatedTo(
                     ChronoUnit.SECONDS)
 
-                Text(modifier = Modifier.padding(5.dp), text = "Last weather data received at ${localTime}${lastPositionDistanceStr}")
+                Text(modifier = Modifier.padding(5.dp), text = "Last weather data received at $localDate ${localTime}${lastPositionDistanceStr}")
             } else {
                 Text(modifier = Modifier.padding(5.dp), text = "No weather data received yet, waiting for GPS fix...")
             }

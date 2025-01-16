@@ -51,11 +51,12 @@ fun getWeatherIcon(interpretation: WeatherInterpretation): Int {
 @Composable
 fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int, windSpeed: Int, windGusts: Int, windSpeedUnit: WindUnit,
             precipitation: Double, precipitationProbability: Int?, precipitationUnit: PrecipitationUnit,
-            temperature: Int, temperatureUnit: TemperatureUnit, timeLabel: String? = null, rowAlignment: Alignment.Horizontal = Alignment.Horizontal.CenterHorizontally) {
+            temperature: Int, temperatureUnit: TemperatureUnit, timeLabel: String? = null, rowAlignment: Alignment.Horizontal = Alignment.Horizontal.CenterHorizontally,
+            dateLabel: String? = null) {
 
     val fontSize = 14f
 
-    Column(modifier = GlanceModifier.fillMaxHeight().padding(2.dp).width(85.dp), horizontalAlignment = rowAlignment) {
+    Column(modifier = GlanceModifier.fillMaxHeight().padding(1.dp).width(86.dp), horizontalAlignment = rowAlignment) {
         Row(modifier = GlanceModifier.defaultWeight(), horizontalAlignment = rowAlignment, verticalAlignment = Alignment.CenterVertically) {
             Image(
                 modifier = GlanceModifier.defaultWeight(),
@@ -63,6 +64,15 @@ fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int
                 contentDescription = "Current weather information",
                 contentScale = ContentScale.Fit,
                 colorFilter = ColorFilter.tint(ColorProvider(Color.Black, Color.White))
+            )
+        }
+
+        if (dateLabel != null) {
+            Text(
+                text = dateLabel,
+                modifier = GlanceModifier.padding(1.dp),
+                style = TextStyle(color = ColorProvider(Color.Black, Color.White),
+                    fontFamily = FontFamily.Monospace, fontSize = TextUnit(fontSize, TextUnitType.Sp))
             )
         }
 
