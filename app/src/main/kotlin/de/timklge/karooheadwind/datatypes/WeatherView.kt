@@ -17,9 +17,12 @@ import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxHeight
+import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.width
+import androidx.glance.layout.wrapContentWidth
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
 import androidx.glance.text.FontFamily
@@ -52,14 +55,14 @@ fun getWeatherIcon(interpretation: WeatherInterpretation): Int {
 fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int, windSpeed: Int, windGusts: Int, windSpeedUnit: WindUnit,
             precipitation: Double, precipitationProbability: Int?, precipitationUnit: PrecipitationUnit,
             temperature: Int, temperatureUnit: TemperatureUnit, timeLabel: String? = null, rowAlignment: Alignment.Horizontal = Alignment.Horizontal.CenterHorizontally,
-            dateLabel: String? = null) {
+            dateLabel: String? = null, singleDisplay: Boolean = false) {
 
     val fontSize = 14f
 
-    Column(modifier = GlanceModifier.fillMaxHeight().padding(1.dp).width(86.dp), horizontalAlignment = rowAlignment) {
-        Row(modifier = GlanceModifier.defaultWeight(), horizontalAlignment = rowAlignment, verticalAlignment = Alignment.CenterVertically) {
+    Column(modifier = if (singleDisplay) GlanceModifier.fillMaxSize().padding(1.dp) else GlanceModifier.fillMaxHeight().padding(1.dp).width(86.dp), horizontalAlignment = rowAlignment) {
+        Row(modifier = GlanceModifier.defaultWeight().wrapContentWidth(), horizontalAlignment = rowAlignment, verticalAlignment = Alignment.CenterVertically) {
             Image(
-                modifier = GlanceModifier.defaultWeight(),
+                modifier = GlanceModifier.defaultWeight().wrapContentWidth(),
                 provider = ImageProvider(getWeatherIcon(current)),
                 contentDescription = "Current weather information",
                 contentScale = ContentScale.Fit,
@@ -67,13 +70,17 @@ fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int
             )
         }
 
-        if (dateLabel != null) {
-            Text(
-                text = dateLabel,
-                modifier = GlanceModifier.padding(1.dp),
-                style = TextStyle(color = ColorProvider(Color.Black, Color.White),
-                    fontFamily = FontFamily.Monospace, fontSize = TextUnit(fontSize, TextUnitType.Sp))
-            )
+        if (dateLabel != null && !singleDisplay){
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = dateLabel,
+                    style = TextStyle(
+                        color = ColorProvider(Color.Black, Color.White),
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = TextUnit(fontSize, TextUnitType.Sp)
+                    )
+                )
+            }
         }
 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalAlignment = rowAlignment) {
@@ -101,7 +108,17 @@ fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int
             )
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalAlignment = rowAlignment) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalAlignment = rowAlignment, modifier = GlanceModifier.fillMaxWidth()) {
+            if (dateLabel != null && singleDisplay){
+                Text(
+                    text = "${dateLabel}",
+                    style = TextStyle(color = ColorProvider(Color.Black, Color.White),
+                        fontFamily = FontFamily.Monospace, fontSize = TextUnit(fontSize, TextUnitType.Sp))
+                )
+
+                Spacer(modifier = GlanceModifier.width(5.dp))
+            }
+
             /* Image(
                 modifier = GlanceModifier.height(20.dp).width(12.dp),
                 provider = ImageProvider(R.drawable.water_regular),

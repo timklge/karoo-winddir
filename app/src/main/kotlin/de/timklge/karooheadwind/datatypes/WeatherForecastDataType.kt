@@ -55,6 +55,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import kotlin.math.roundToInt
 
 class CycleHoursAction : ActionCallback {
@@ -162,7 +163,7 @@ class WeatherForecastDataType(
                                 val interpretation = WeatherInterpretation.fromWeatherCode(data.forecastData.weatherCode[index])
                                 val unixTime = data.forecastData.time[index]
                                 val formattedTime = timeFormatter.format(Instant.ofEpochSecond(unixTime))
-                                val formattedDate = Instant.ofEpochSecond(unixTime).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                                val formattedDate = Instant.ofEpochSecond(unixTime).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
                                 val hasNewDate = formattedDate != previousDate || index == 0
 
                                 Weather(baseBitmap,
