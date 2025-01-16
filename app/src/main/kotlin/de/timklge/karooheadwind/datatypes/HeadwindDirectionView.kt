@@ -22,6 +22,7 @@ import androidx.glance.layout.Row
 import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
+import androidx.glance.layout.width
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
 import androidx.glance.text.FontFamily
@@ -29,6 +30,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import de.timklge.karooheadwind.KarooHeadwindExtension
+import de.timklge.karooheadwind.R
 import kotlin.math.roundToInt
 
 data class BitmapWithBearing(val bitmap: Bitmap, val bearing: Int)
@@ -93,7 +95,7 @@ fun HeadwindDirection(baseBitmap: Bitmap, bearing: Int, fontSize: Int, overlayTe
                     modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
                 )
             } else {
-                Row(modifier = GlanceModifier.fillMaxSize()) {
+                Row(modifier = GlanceModifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
                     Column(modifier = GlanceModifier.defaultWeight()){
                         Image(
                             provider = ImageProvider(getArrowBitmapByBearing(baseBitmap, bearing)),
@@ -103,18 +105,22 @@ fun HeadwindDirection(baseBitmap: Bitmap, bearing: Int, fontSize: Int, overlayTe
                         )
                     }
 
-                    Column(modifier = GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.Horizontal.End) {
+                    Column(modifier = GlanceModifier.defaultWeight(),
+                        horizontalAlignment = Alignment.Horizontal.CenterHorizontally) {
+
                         Text(
                             overlayText,
-                            style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.5 * fontSize).sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
+                            style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.7 * fontSize).sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
                             modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
                         )
 
-                        Text(
-                            overlaySubText,
-                            style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.35 * fontSize).sp, fontFamily = FontFamily.Monospace),
-                            modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
-                        )
+                        Row(){
+                            Text(
+                                overlaySubText,
+                                style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.5 * fontSize).sp, fontFamily = FontFamily.Monospace),
+                                modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
+                            )
+                        }
                     }
 
                 }

@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.DpSize
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
@@ -41,6 +42,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
+import kotlin.math.cos
 import kotlin.math.roundToInt
 
 fun interpolateColor(color1: Color, color2: Color, factor: Float): Color {
@@ -152,13 +154,21 @@ class TailwindAndRideSpeedDataType(
                     WindDirectionIndicatorSetting.WIND_DIRECTION -> streamData.absoluteWindDirection + 180
                 }
 
-                val text = streamData.rideSpeed?.roundToInt()?.toString() ?: ""
-                val subtextWithSign = if (streamData.settings.windDirectionIndicatorTextSetting == WindDirectionIndicatorTextSetting.HEADWIND_SPEED){
-                        val sign = if (windSpeed < 0) "+" else {
-                            if (windSpeed > 0) "-" else ""
+                val text = streamData.rideSpeed?.let { String.format(Locale.current.platformLocale, "%.1f", it) } ?: ""
+
+                val subtextWithSign = when (streamData.settings.windDirectionIndicatorTextSetting) {
+                    WindDirectionIndicatorTextSetting.HEADWIND_SPEED -> {
+                        val headwindSpeed = cos( (windDirection + 180) * Math.PI / 180.0) * windSpeed
+                        headwindSpeed.roundToInt().toString()
+
+                        val sign = if (headwindSpeed < 0) "+" else {
+                            if (headwindSpeed > 0) "-" else ""
                         }
-                        "$sign${windSpeed.roundToInt().absoluteValue}"
-                } else windSpeed.roundToInt().toString()
+                        "$sign${headwindSpeed.roundToInt().absoluteValue}"
+                    }
+                    WindDirectionIndicatorTextSetting.WIND_SPEED -> windSpeed.roundToInt().toString()
+                    WindDirectionIndicatorTextSetting.NONE -> ""
+                }
 
                 val windSpeedInKmh = if (streamData.isImperial == true){
                     windSpeed / 2.23694 * 3.6

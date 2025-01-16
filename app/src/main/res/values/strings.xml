@@ -3,8 +3,8 @@
     <string name="extension_name">headwind</string>
     <string name="headwind">Headwind</string>
     <string name="headwind_description">Current headwind direction and headwind speed</string>
-    <string name="tailwind_and_speed">Tailwind and ride speed</string>
-    <string name="tailwind_and_speed_description">Current tailwind and ride speed</string>
+    <string name="tailwind_and_speed">Speed and tailwind</string>
+    <string name="tailwind_and_speed_description">Current rider speed and tailwind</string>
     <string name="relativeHumidity">Humidity</string>
     <string name="relativeHumidity_description">Relative humidity in percent</string>
     <string name="cloudCover">Cloud cover</string>
