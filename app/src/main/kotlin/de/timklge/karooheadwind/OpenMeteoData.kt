@@ -45,6 +45,8 @@ enum class WeatherInterpretation {
                 else -> UNKNOWN
             }
         }
+
+        fun getKnownWeatherCodes(): Set<Int> = setOf(0, 1, 2, 3, 45, 48, 61, 63, 65, 66, 67, 80, 81, 82, 71, 73, 75, 77, 85, 86, 51, 53, 55, 56, 57, 95, 96, 99)
     }
 }
 
@@ -56,5 +58,5 @@ data class OpenMeteoCurrentWeatherResponse(
     val timezone: String,
     val elevation: Double,
     @SerialName("utc_offset_seconds") val utfOffsetSeconds: Int,
-    @SerialName("hourly") val forecastData: OpenMeteoForecastData
+    @SerialName("hourly") val forecastData: OpenMeteoForecastData?
 )

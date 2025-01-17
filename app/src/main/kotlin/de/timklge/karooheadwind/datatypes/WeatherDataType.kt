@@ -13,6 +13,7 @@ import androidx.glance.layout.fillMaxSize
 import de.timklge.karooheadwind.HeadingResponse
 import de.timklge.karooheadwind.KarooHeadwindExtension
 import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
+import de.timklge.karooheadwind.OpenMeteoData
 import de.timklge.karooheadwind.WeatherInterpretation
 import de.timklge.karooheadwind.getHeadingFlow
 import de.timklge.karooheadwind.screens.HeadwindSettings
@@ -34,7 +35,10 @@ import io.hammerhead.karooext.models.ViewConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -69,6 +73,23 @@ class WeatherDataType(
         }
     }
 
+    data class StreamData(val data: OpenMeteoCurrentWeatherResponse?, val settings: HeadwindSettings,
+                          val profile: UserProfile? = null, val headingResponse: HeadingResponse? = null)
+
+    private fun previewFlow(): Flow<StreamData> = flow {
+        while (true){
+            emit(StreamData(
+                OpenMeteoCurrentWeatherResponse(
+                    OpenMeteoData(Instant.now().epochSecond, 0, 20.0, 50, 3.0, 0, 1013.25, 15.0, 30.0, 30.0, WeatherInterpretation.getKnownWeatherCodes().random()),
+                    0.0, 0.0, "Europe/Berlin", 30.0, 0,
+
+                    null
+            ), HeadwindSettings()))
+
+            delay(5_000)
+        }
+    }
+
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
         Log.d(KarooHeadwindExtension.TAG, "Starting weather view with $emitter")
         val configJob = CoroutineScope(Dispatchers.IO).launch {
@@ -81,14 +102,18 @@ class WeatherDataType(
             de.timklge.karooheadwind.R.drawable.arrow_0
         )
 
-        data class StreamData(val data: OpenMeteoCurrentWeatherResponse?, val settings: HeadwindSettings,
-            val profile: UserProfile? = null, val headingResponse: HeadingResponse? = null)
 
-        val viewJob = CoroutineScope(Dispatchers.IO).launch {
+        val dataFlow = if (config.preview){
+            previewFlow()
+        } else {
             context.streamCurrentWeatherData()
                 .combine(context.streamSettings(karooSystem)) { data, settings -> StreamData(data, settings) }
                 .combine(karooSystem.streamUserProfile()) { data, profile -> data.copy(profile = profile) }
                 .combine(karooSystem.getHeadingFlow(context)) { data, heading -> data.copy(headingResponse = heading) }
+        }
+
+        val viewJob = CoroutineScope(Dispatchers.IO).launch {
+            dataFlow
                 .collect { (data, settings, userProfile, headingResponse) ->
                     Log.d(KarooHeadwindExtension.TAG, "Updating weather view")
 
