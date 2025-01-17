@@ -23,25 +23,32 @@ import io.hammerhead.karooext.models.UserProfile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.time.debounce
+import java.time.Duration
+import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
-class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.2") {
+class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.3") {
     companion object {
         const val TAG = "karoo-headwind"
     }
 
+
     lateinit var karooSystem: KarooSystemService
 
+    private var updateLastKnownGpsJob: Job? = null
     private var serviceJob: Job? = null
 
     override val types by lazy {
@@ -62,14 +69,18 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.2") {
         )
     }
 
-    data class StreamData(val settings: HeadwindSettings, val gps: GpsCoordinates,
+    data class StreamData(val settings: HeadwindSettings, val gps: GpsCoordinates?,
                           val profile: UserProfile? = null)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     override fun onCreate() {
         super.onCreate()
 
         karooSystem = KarooSystemService(applicationContext)
+
+        updateLastKnownGpsJob = CoroutineScope(Dispatchers.IO).launch {
+            karooSystem.updateLastKnownGps(this@KarooHeadwindExtension)
+        }
 
         serviceJob = CoroutineScope(Dispatchers.IO).launch {
             karooSystem.connect { connected ->
@@ -80,7 +91,15 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.2") {
 
             val gpsFlow = karooSystem
                 .getGpsCoordinateFlow(this@KarooHeadwindExtension)
-                .transformLatest { value: GpsCoordinates ->
+                .distinctUntilChanged { old, new ->
+                    if (old != null && new != null) {
+                        old.distanceTo(new).absoluteValue < 0.001
+                    } else {
+                        old == new
+                    }
+                }
+                .debounce(Duration.ofSeconds(5))
+                .transformLatest { value: GpsCoordinates? ->
                     while(true){
                         emit(value)
                         delay(1.hours)
@@ -99,6 +118,10 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.2") {
                     } catch(e: Exception){
                         Log.e(TAG, "Failed to read stats", e)
                         HeadwindStats()
+                    }
+
+                    if (gps == null){
+                        error("No GPS coordinates available")
                     }
 
                     val response = karooSystem.makeOpenMeteoHttpRequest(gps, settings, profile)

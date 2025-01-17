@@ -12,6 +12,7 @@ import io.hammerhead.karooext.models.DataType
 import io.hammerhead.karooext.models.StreamState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 abstract class BaseDataType(
@@ -25,10 +26,12 @@ abstract class BaseDataType(
         val job = CoroutineScope(Dispatchers.IO).launch {
             val currentWeatherData = applicationContext.streamCurrentWeatherData()
 
-            currentWeatherData.collect { data ->
-                val value = getValue(data)
-                Log.d(KarooHeadwindExtension.TAG, "$dataTypeId: $value")
-                emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to value))))
+            currentWeatherData
+                .filterNotNull()
+                .collect { data ->
+                    val value = getValue(data)
+                    Log.d(KarooHeadwindExtension.TAG, "$dataTypeId: $value")
+                    emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to value))))
             }
         }
         emitter.setCancellable {
