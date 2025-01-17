@@ -12,6 +12,13 @@
         typeId="headwind" />
 
     <DataType
+        description="@string/tailwind_and_speed_description"
+        displayName="@string/tailwind_and_speed"
+        graphical="true"
+        icon="@drawable/ic_launcher"
+        typeId="tailwind-and-ride-speed" />
+
+    <DataType
         description="@string/weather_description"
         displayName="@string/weather"
         graphical="true"

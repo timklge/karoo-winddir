@@ -4,4 +4,13 @@
     <color name="colorPrimaryDark">#2600B3</color>
 
     <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+
+    <color name="green">#00ff00</color>
+    <color name="orange">#ff9930</color>
+    <color name="red">#FF2424</color>
+
+    <color name="hGreen">#008000</color>
+    <color name="hOrange">#BB4300</color>
+    <color name="hRed">#B30000</color>
 </resources>
