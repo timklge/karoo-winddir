@@ -40,7 +40,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.cos
@@ -85,10 +84,10 @@ class TailwindAndRideSpeedDataType(
         }
     }
 
-    data class StreamData(val value: Double,
-                          val absoluteWindDirection: Double,
-                          val windSpeed: Double,
-                          val settings: HeadwindSettings,
+    data class StreamData(val headingResponse: HeadingResponse,
+                          val absoluteWindDirection: Double?,
+                          val windSpeed: Double?,
+                          val settings: HeadwindSettings?,
                           val rideSpeed: Double? = null,
                           val isImperial: Boolean? = null)
 
@@ -99,7 +98,7 @@ class TailwindAndRideSpeedDataType(
                 val windSpeed = (-20..20).random()
                 val rideSpeed = (10..40).random().toDouble()
 
-                emit(StreamData(bearing, bearing, windSpeed.toDouble(), HeadwindSettings(), rideSpeed))
+                emit(StreamData(HeadingResponse.Value(bearing), bearing, windSpeed.toDouble(), HeadwindSettings(), rideSpeed))
 
                 delay(2_000)
             }
@@ -127,11 +126,10 @@ class TailwindAndRideSpeedDataType(
         val flow = if (config.preview) {
             previewFlow()
         } else {
-            karooSystem.streamDataFlow(dataTypeId)
-                .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue }
+            karooSystem.getRelativeHeadingFlow(context)
                 .combine(context.streamCurrentWeatherData()) { value, data -> value to data }
                 .combine(context.streamSettings(karooSystem)) { (value, data), settings ->
-                    StreamData(value, data?.current?.windDirection ?: 0.0, data?.current?.windSpeed ?: 0.0, settings)
+                    StreamData(value, data?.current?.windDirection, data?.current?.windSpeed, settings)
                 }
                 .combine(karooSystem.streamUserProfile()) { streamData, userProfile ->
                     val isImperial = userProfile.preferredUnit.distance == UserProfile.PreferredUnit.UnitType.IMPERIAL
@@ -150,9 +148,23 @@ class TailwindAndRideSpeedDataType(
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
             flow.collect { streamData ->
                 Log.d(KarooHeadwindExtension.TAG, "Updating headwind direction view")
+
+                val value = (streamData.headingResponse as? HeadingResponse.Value)?.diff
+                if (value == null || streamData.absoluteWindDirection == null || streamData.settings == null || streamData.windSpeed == null){
+                    var headingResponse = streamData.headingResponse
+
+                    if (headingResponse is HeadingResponse.Value && (streamData.absoluteWindDirection == null || streamData.windSpeed == null)){
+                        headingResponse = HeadingResponse.NoWeatherData
+                    }
+
+                    emitter.updateView(getErrorWidget(glance, context, streamData.settings, headingResponse).remoteViews)
+
+                    return@collect
+                }
+
                 val windSpeed = streamData.windSpeed
                 val windDirection = when (streamData.settings.windDirectionIndicatorSetting){
-                    WindDirectionIndicatorSetting.HEADWIND_DIRECTION -> streamData.value
+                    WindDirectionIndicatorSetting.HEADWIND_DIRECTION -> streamData.headingResponse.diff
                     WindDirectionIndicatorSetting.WIND_DIRECTION -> streamData.absoluteWindDirection + 180
                 }
 
