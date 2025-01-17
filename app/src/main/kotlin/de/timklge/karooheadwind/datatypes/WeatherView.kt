@@ -62,7 +62,7 @@ fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int
     Column(modifier = if (singleDisplay) GlanceModifier.fillMaxSize().padding(1.dp) else GlanceModifier.fillMaxHeight().padding(1.dp).width(86.dp), horizontalAlignment = rowAlignment) {
         Row(modifier = GlanceModifier.defaultWeight().wrapContentWidth(), horizontalAlignment = rowAlignment, verticalAlignment = Alignment.CenterVertically) {
             Image(
-                modifier = GlanceModifier.defaultWeight().wrapContentWidth(),
+                modifier = GlanceModifier.defaultWeight().wrapContentWidth().padding(1.dp),
                 provider = ImageProvider(getWeatherIcon(current)),
                 contentDescription = "Current weather information",
                 contentScale = ContentScale.Fit,
@@ -95,7 +95,7 @@ fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int
             }
 
             Image(
-                modifier = GlanceModifier.height(20.dp).width(12.dp),
+                modifier = GlanceModifier.height(16.dp).width(12.dp).padding(1.dp),
                 provider = ImageProvider(R.drawable.thermometer),
                 contentDescription = "Temperature",
                 contentScale = ContentScale.Fit,
@@ -111,21 +111,13 @@ fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int
         Row(verticalAlignment = Alignment.CenterVertically, horizontalAlignment = rowAlignment, modifier = GlanceModifier.fillMaxWidth()) {
             if (dateLabel != null && singleDisplay){
                 Text(
-                    text = "${dateLabel}",
+                    text = "$dateLabel",
                     style = TextStyle(color = ColorProvider(Color.Black, Color.White),
                         fontFamily = FontFamily.Monospace, fontSize = TextUnit(fontSize, TextUnitType.Sp))
                 )
 
                 Spacer(modifier = GlanceModifier.width(5.dp))
             }
-
-            /* Image(
-                modifier = GlanceModifier.height(20.dp).width(12.dp),
-                provider = ImageProvider(R.drawable.water_regular),
-                contentDescription = "Rain",
-                contentScale = ContentScale.Fit,
-                colorFilter = ColorFilter.tint(ColorProvider(Color.Black, Color.White))
-            ) */
 
             val precipitationProbabilityLabel = if (precipitationProbability != null) "${precipitationProbability}%," else ""
             Text(
@@ -136,7 +128,7 @@ fun Weather(baseBitmap: Bitmap, current: WeatherInterpretation, windBearing: Int
             Spacer(modifier = GlanceModifier.width(5.dp))
 
             Image(
-                modifier = GlanceModifier.height(20.dp).width(12.dp),
+                modifier = GlanceModifier.height(16.dp).width(12.dp).padding(1.dp),
                 provider = ImageProvider(getArrowBitmapByBearing(baseBitmap, windBearing + 180)),
                 contentDescription = "Current wind direction",
                 contentScale = ContentScale.Fit,

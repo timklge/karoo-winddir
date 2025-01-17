@@ -51,7 +51,6 @@ class WeatherDataType(
 
     companion object {
         val timeFormatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
-        val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy").withZone(ZoneId.systemDefault())
     }
 
     // FIXME: Remove. Currently, the data field will permanently show "no sensor" if no data stream is provided
