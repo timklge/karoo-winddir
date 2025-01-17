@@ -41,7 +41,7 @@ import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
-class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.1.3") {
+class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.2") {
     companion object {
         const val TAG = "karoo-headwind"
     }
