@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
+import de.timklge.karooheadwind.HeadingResponse
 import de.timklge.karooheadwind.KarooHeadwindExtension
 import de.timklge.karooheadwind.R
 import de.timklge.karooheadwind.getRelativeHeadingFlow
@@ -75,7 +76,8 @@ class TailwindAndRideSpeedDataType(
         val job = CoroutineScope(Dispatchers.IO).launch {
             karooSystem.getRelativeHeadingFlow(applicationContext)
                 .collect { diff ->
-                    emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to diff))))
+                    val value = (diff as? HeadingResponse.Value)?.diff ?: 0.0
+                    emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to value))))
                 }
         }
         emitter.setCancellable {
@@ -129,7 +131,7 @@ class TailwindAndRideSpeedDataType(
                 .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue }
                 .combine(context.streamCurrentWeatherData()) { value, data -> value to data }
                 .combine(context.streamSettings(karooSystem)) { (value, data), settings ->
-                    StreamData(value, data.current.windDirection, data.current.windSpeed, settings)
+                    StreamData(value, data?.current?.windDirection ?: 0.0, data?.current?.windSpeed ?: 0.0, settings)
                 }
                 .combine(karooSystem.streamUserProfile()) { streamData, userProfile ->
                     val isImperial = userProfile.preferredUnit.distance == UserProfile.PreferredUnit.UnitType.IMPERIAL
