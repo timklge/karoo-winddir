@@ -39,6 +39,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalGlanceRemoteViewsApi::class)
@@ -99,6 +100,8 @@ class WeatherDataType(
 
                     val interpretation = WeatherInterpretation.fromWeatherCode(data.current.weatherCode)
                     val formattedTime = timeFormatter.format(Instant.ofEpochSecond(data.current.time))
+                    val formattedDate = Instant.ofEpochSecond(data.current.time).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofLocalizedDate(
+                        FormatStyle.SHORT))
 
                     val result = glance.compose(context, DpSize.Unspecified) {
                         Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.CenterEnd) {
@@ -114,11 +117,13 @@ class WeatherDataType(
                                 temperature = data.current.temperature.roundToInt(),
                                 temperatureUnit = if (userProfile?.preferredUnit?.temperature != UserProfile.PreferredUnit.UnitType.IMPERIAL) TemperatureUnit.CELSIUS else TemperatureUnit.FAHRENHEIT,
                                 timeLabel = formattedTime,
+                                dateLabel = formattedDate,
                                 rowAlignment = when (config.alignment){
                                     ViewConfig.Alignment.LEFT -> Alignment.Horizontal.Start
                                     ViewConfig.Alignment.CENTER -> Alignment.Horizontal.CenterHorizontally
                                     ViewConfig.Alignment.RIGHT -> Alignment.Horizontal.End
-                                }
+                                },
+                                singleDisplay = true
                             )
                         }
                     }

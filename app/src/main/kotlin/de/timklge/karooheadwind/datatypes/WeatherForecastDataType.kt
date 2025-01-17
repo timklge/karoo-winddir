@@ -55,6 +55,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import kotlin.math.roundToInt
 
 class CycleHoursAction : ActionCallback {
@@ -139,6 +140,13 @@ class WeatherForecastDataType(
                         Row(modifier = GlanceModifier.fillMaxSize().clickable(onClick = actionRunCallback<CycleHoursAction>()), horizontalAlignment = Alignment.Horizontal.CenterHorizontally) {
                             val hourOffset = widgetSettings?.currentForecastHourOffset ?: 0
 
+                            var previousDate: String? = let {
+                                val unixTime = data.forecastData.time.firstOrNull()
+                                val formattedDate = unixTime?.let { Instant.ofEpochSecond(it).atZone(ZoneId.systemDefault()).toLocalDate().toString() }
+
+                                formattedDate
+                            }
+
                             for (index in hourOffset..hourOffset + 2){
                                 if (index >= data.forecastData.weatherCode.size) {
                                     break
@@ -155,6 +163,8 @@ class WeatherForecastDataType(
                                 val interpretation = WeatherInterpretation.fromWeatherCode(data.forecastData.weatherCode[index])
                                 val unixTime = data.forecastData.time[index]
                                 val formattedTime = timeFormatter.format(Instant.ofEpochSecond(unixTime))
+                                val formattedDate = Instant.ofEpochSecond(unixTime).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
+                                val hasNewDate = formattedDate != previousDate || index == 0
 
                                 Weather(baseBitmap,
                                     current = interpretation,
@@ -167,8 +177,11 @@ class WeatherForecastDataType(
                                     precipitationUnit = if (userProfile?.preferredUnit?.distance != UserProfile.PreferredUnit.UnitType.IMPERIAL) PrecipitationUnit.MILLIMETERS else PrecipitationUnit.INCH,
                                     temperature = data.forecastData.temperature[index].roundToInt(),
                                     temperatureUnit = if (userProfile?.preferredUnit?.temperature != UserProfile.PreferredUnit.UnitType.IMPERIAL) TemperatureUnit.CELSIUS else TemperatureUnit.FAHRENHEIT,
-                                    timeLabel = formattedTime
+                                    timeLabel = formattedTime,
+                                    dateLabel = if (hasNewDate) formattedDate else null
                                 )
+
+                                previousDate = formattedDate
                             }
                         }
                     }
