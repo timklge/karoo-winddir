@@ -187,7 +187,7 @@ class TailwindAndRideSpeedDataType(
                 var dayColor = Color(ContextCompat.getColor(context, R.color.black))
                 var nightColor = Color(ContextCompat.getColor(context, R.color.white))
 
-                if (streamData.settings.windDirectionIndicatorTextSetting == WindDirectionIndicatorTextSetting.HEADWIND_SPEED) {
+                if (streamData.settings.windDirectionIndicatorSetting == WindDirectionIndicatorSetting.HEADWIND_DIRECTION) {
                     val headwindSpeed = cos( (windDirection + 180) * Math.PI / 180.0) * windSpeed
                     val windSpeedInKmh = if (streamData.isImperial == true){
                         headwindSpeed / 2.23694 * 3.6
