@@ -177,7 +177,11 @@ class WeatherForecastDataType(
                     }
 
                     val result = glance.compose(context, DpSize.Unspecified) {
-                        Row(modifier = GlanceModifier.fillMaxSize().clickable(onClick = actionRunCallback<CycleHoursAction>()), horizontalAlignment = Alignment.Horizontal.CenterHorizontally) {
+                        var modifier = GlanceModifier.fillMaxSize()
+
+                        if (!config.preview) modifier = modifier.clickable(onClick = actionRunCallback<CycleHoursAction>())
+
+                        Row(modifier = modifier, horizontalAlignment = Alignment.Horizontal.CenterHorizontally) {
                             val hourOffset = widgetSettings?.currentForecastHourOffset ?: 0
 
                             var previousDate: String? = let {
