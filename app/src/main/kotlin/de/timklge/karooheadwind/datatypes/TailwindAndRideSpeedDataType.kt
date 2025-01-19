@@ -178,7 +178,7 @@ class TailwindAndRideSpeedDataType(
                         val sign = if (headwindSpeed < 0) "+" else {
                             if (headwindSpeed > 0) "-" else ""
                         }
-                        "$sign${headwindSpeed.roundToInt().absoluteValue}"
+                        "$sign${headwindSpeed.roundToInt().absoluteValue} ${windSpeed.roundToInt()}"
                     }
                     WindDirectionIndicatorTextSetting.WIND_SPEED -> windSpeed.roundToInt().toString()
                     WindDirectionIndicatorTextSetting.NONE -> ""

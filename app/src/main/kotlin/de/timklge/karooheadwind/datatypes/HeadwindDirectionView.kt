@@ -91,6 +91,7 @@ fun HeadwindDirection(baseBitmap: Bitmap, bearing: Int, fontSize: Int, overlayTe
 
                 Text(
                     overlayText,
+                    maxLines = 1,
                     style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.6 * fontSize).sp, fontFamily = FontFamily.Monospace),
                     modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
                 )
@@ -105,11 +106,11 @@ fun HeadwindDirection(baseBitmap: Bitmap, bearing: Int, fontSize: Int, overlayTe
                         )
                     }
 
-                    Column(modifier = GlanceModifier.defaultWeight(),
-                        horizontalAlignment = Alignment.Horizontal.CenterHorizontally) {
+                    Column(modifier = GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.Horizontal.CenterHorizontally) {
 
                         Text(
                             overlayText,
+                            maxLines = 1,
                             style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.7 * fontSize).sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
                             modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
                         )
@@ -117,7 +118,8 @@ fun HeadwindDirection(baseBitmap: Bitmap, bearing: Int, fontSize: Int, overlayTe
                         Row(){
                             Text(
                                 overlaySubText,
-                                style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.5 * fontSize).sp, fontFamily = FontFamily.Monospace),
+                                maxLines = 1,
+                                style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.4 * fontSize).sp, fontFamily = FontFamily.Monospace),
                                 modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
                             )
                         }
