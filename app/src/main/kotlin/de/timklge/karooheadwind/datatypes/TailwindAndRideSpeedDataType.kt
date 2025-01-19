@@ -95,7 +95,7 @@ class TailwindAndRideSpeedDataType(
         return flow {
             while (true) {
                 val bearing = (0..360).random().toDouble()
-                val windSpeed = (-20..20).random()
+                val windSpeed = (0..20).random()
                 val rideSpeed = (10..40).random().toDouble()
 
                 emit(StreamData(HeadingResponse.Value(bearing), bearing, windSpeed.toDouble(), HeadwindSettings(), rideSpeed))
