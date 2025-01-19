@@ -61,8 +61,8 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.time.format.FormatStyle
+import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
 
 class CycleHoursAction : ActionCallback {
@@ -185,8 +185,8 @@ class WeatherForecastDataType(
                             val hourOffset = widgetSettings?.currentForecastHourOffset ?: 0
 
                             var previousDate: String? = let {
-                                val unixTime = data.forecastData?.time?.firstOrNull()
-                                val formattedDate = unixTime?.let { Instant.ofEpochSecond(it).atZone(ZoneId.systemDefault()).toLocalDate().toString() }
+                                val unixTime = data.forecastData?.time?.getOrNull(hourOffset)
+                                val formattedDate = unixTime?.let { Instant.ofEpochSecond(unixTime).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) }
 
                                 formattedDate
                             }
