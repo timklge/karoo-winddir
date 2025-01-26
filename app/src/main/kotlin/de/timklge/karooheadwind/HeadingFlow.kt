@@ -115,25 +115,11 @@ fun KarooSystemService.getGpsCoordinateFlow(context: Context): Flow<GpsCoordinat
 
     val initialFlow = flow {
         val lastKnownPosition = context.getLastKnownPosition()
-        if (lastKnownPosition != null) emit(lastKnownPosition)
+
+        emit(lastKnownPosition)
     }
 
-    val gpsFlow = streamDataFlow(DataType.Type.LOCATION)
-        .map { (it as? StreamState.Streaming)?.dataPoint?.values }
-        .map { values ->
-            val lat = values?.get(DataType.Field.LOC_LATITUDE)
-            val lon = values?.get(DataType.Field.LOC_LONGITUDE)
-            val bearing = values?.get(DataType.Field.LOC_BEARING)
-
-            if (lat != null && lon != null){
-                // Log.d(KarooHeadwindExtension.TAG, "Updated gps coordinates: $lat $lon")
-                GpsCoordinates(lat, lon, bearing)
-            } else {
-                // Log.w(KarooHeadwindExtension.TAG, "Gps unavailable: $values")
-                null
-            }
-        }
-
+    val gpsFlow = streamLocation().map { GpsCoordinates(it.lat, it.lng, it.orientation) }
     val concatenatedFlow = concatenate(initialFlow, gpsFlow)
 
     return concatenatedFlow
