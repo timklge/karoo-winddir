@@ -19,18 +19,15 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
-import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
-import androidx.glance.layout.width
+import androidx.glance.layout.size
 import androidx.glance.preview.ExperimentalGlancePreviewApi
-import androidx.glance.preview.Preview
 import androidx.glance.text.FontFamily
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import de.timklge.karooheadwind.KarooHeadwindExtension
-import de.timklge.karooheadwind.R
 import kotlin.math.roundToInt
 
 data class BitmapWithBearing(val bitmap: Bitmap, val bearing: Int)
@@ -69,9 +66,11 @@ fun getArrowBitmapByBearing(baseBitmap: Bitmap, bearing: Int): Bitmap {
 }
 
 @OptIn(ExperimentalGlancePreviewApi::class)
-@Preview(widthDp = 200, heightDp = 150)
 @Composable
-fun HeadwindDirection(baseBitmap: Bitmap, bearing: Int, fontSize: Int, overlayText: String, overlaySubText: String? = null, dayColor: Color = Color.Black, nightColor: Color = Color.White) {
+fun HeadwindDirection(baseBitmap: Bitmap, bearing: Int, fontSize: Int,
+                      overlayText: String, overlaySubText: String? = null,
+                      dayColor: Color = Color.Black, nightColor: Color = Color.White,
+                      viewSize: Pair<Int, Int>) {
     Box(
         modifier = GlanceModifier.fillMaxSize().padding(5.dp),
         contentAlignment = Alignment(
@@ -97,21 +96,22 @@ fun HeadwindDirection(baseBitmap: Bitmap, bearing: Int, fontSize: Int, overlayTe
                 )
             } else {
                 Row(modifier = GlanceModifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-                    Column(modifier = GlanceModifier.defaultWeight()){
-                        Image(
-                            provider = ImageProvider(getArrowBitmapByBearing(baseBitmap, bearing)),
-                            contentDescription = "Relative wind direction indicator",
-                            contentScale = ContentScale.Fit,
-                            colorFilter = ColorFilter.tint(ColorProvider(dayColor, nightColor))
-                        )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = GlanceModifier.size(40.dp)) {
+                            Image(
+                                provider = ImageProvider(getArrowBitmapByBearing(baseBitmap, bearing)),
+                                contentDescription = "Relative wind direction indicator",
+                                contentScale = ContentScale.Fit,
+                                colorFilter = ColorFilter.tint(ColorProvider(dayColor, nightColor))
+                            )
+                        }
                     }
 
                     Column(modifier = GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.Horizontal.CenterHorizontally) {
-
                         Text(
                             overlayText,
                             maxLines = 1,
-                            style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.7 * fontSize).sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
+                            style = TextStyle(ColorProvider(dayColor, nightColor), fontSize = (0.65 * fontSize).sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
                             modifier = GlanceModifier.background(Color(1f, 1f, 1f, 0.4f), Color(0f, 0f, 0f, 0.4f)).padding(1.dp)
                         )
 

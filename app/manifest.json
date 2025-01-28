@@ -3,9 +3,9 @@
   "packageName": "de.timklge.karooheadwind",
   "iconUrl": "https://github.com/timklge/karoo-headwind/releases/latest/download/karoo-headwind.png",
   "latestApkUrl": "https://github.com/timklge/karoo-headwind/releases/latest/download/app-release.apk",
-  "latestVersion": "1.2",
-  "latestVersionCode": 8,
+  "latestVersion": "1.2.1",
+  "latestVersionCode": 9,
   "developer": "timklge",
   "description": "Provides headwind direction, wind speed and other weather data fields",
-  "releaseNotes": "Add tailwind and ride speed data field, Add error indication in data fields, Add date on weather data fields, Add preview of data fields when editing profiles"
+  "releaseNotes": "Add tailwind and ride speed data field, reduce font size in tailwind indicators"
 }
