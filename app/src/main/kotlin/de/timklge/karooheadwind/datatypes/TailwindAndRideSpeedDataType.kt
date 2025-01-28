@@ -200,7 +200,7 @@ class TailwindAndRideSpeedDataType(
 
                 val result = glance.compose(context, DpSize.Unspecified) {
                     HeadwindDirection(baseBitmap, windDirection.roundToInt(), config.textSize, text, subtextWithSign,
-                        dayColor, nightColor)
+                        dayColor, nightColor, viewSize = config.viewSize)
                 }
 
                 emitter.updateView(result.remoteViews)
