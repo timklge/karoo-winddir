@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -57,26 +58,6 @@ fun KarooSystemService.getHeadingFlow(context: Context): Flow<HeadingResponse> {
             headingValue ?: HeadingResponse.NoGps
         }
         .distinctUntilChanged()
-        .scan(emptyList<HeadingResponse>()) { acc, value -> /* Average over 3 values */
-            if (value !is HeadingResponse.Value) return@scan listOf(value)
-
-            val newAcc = acc + value
-            if (newAcc.size > 3) newAcc.drop(1) else newAcc
-        }
-        .map { data ->
-            Log.i(KarooHeadwindExtension.TAG, "Heading value: $data")
-
-            if (data.isEmpty()) return@map HeadingResponse.NoGps
-            if (data.firstOrNull() !is HeadingResponse.Value) return@map data.first()
-
-            val avgValues = data.mapNotNull { (it as? HeadingResponse.Value)?.diff }
-
-            if (avgValues.isEmpty()) return@map HeadingResponse.NoGps
-
-            val avg = avgValues.average()
-
-            HeadingResponse.Value(avg)
-        }
 }
 
 fun <T> concatenate(vararg flows: Flow<T>) = flow {
@@ -119,7 +100,10 @@ fun KarooSystemService.getGpsCoordinateFlow(context: Context): Flow<GpsCoordinat
         emit(lastKnownPosition)
     }
 
-    val gpsFlow = streamLocation().map { GpsCoordinates(it.lat, it.lng, it.orientation) }
+    val gpsFlow = streamLocation()
+        .filter { it.orientation != null }
+        .map { GpsCoordinates(it.lat, it.lng, it.orientation) }
+
     val concatenatedFlow = concatenate(initialFlow, gpsFlow)
 
     return concatenatedFlow
