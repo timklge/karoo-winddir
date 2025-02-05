@@ -37,10 +37,41 @@ suspend fun getErrorWidget(glance: GlanceRemoteViews, context: Context, settings
 
             Log.d(KarooHeadwindExtension.TAG, "Error widget: $errorMessage")
 
-            Text(text = errorMessage, style = TextStyle(fontSize = TextUnit(16f, TextUnitType.Sp),
-                textAlign = TextAlign.Center,
-                color = ColorProvider(Color.Black, Color.White)
+            Text(text = errorMessage,
+                style = TextStyle(
+                    fontSize = TextUnit(16f, TextUnitType.Sp),
+                    textAlign = TextAlign.Center,
+                    color = ColorProvider(Color.Black, Color.White)
+                )
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalGlanceRemoteViewsApi::class)
+suspend fun getErrorWidget(glance: GlanceRemoteViews, context: Context, errorCode: Int): RemoteViewsCompositionResult {
+    return glance.compose(context, DpSize.Unspecified) {
+        Box(modifier = GlanceModifier.fillMaxSize().padding(5.dp), contentAlignment = Alignment.Center) {
+            val errorMessage = when (errorCode) {
+                HeadwindDirectionDataType.ERROR_APP_NOT_SET_UP -> {
+                    "Headwind app not set up"
+                }
+                HeadwindDirectionDataType.ERROR_NO_GPS -> {
+                    "No GPS signal"
+                }
+                else -> {
+                    "Weather data download failed"
+                }
+            }
+
+            Log.d(KarooHeadwindExtension.TAG, "Error widget: $errorMessage")
+
+            Text(text = errorMessage,
+                style = TextStyle(
+                    fontSize = TextUnit(16f, TextUnitType.Sp),
+                    textAlign = TextAlign.Center,
+                    color = ColorProvider(Color.Black, Color.White)
+                )
             )
         }
     }

@@ -45,3 +45,15 @@ The app will automatically attempt to download weather data for your current app
 - Icons are from [boxicons.com](https://boxicons.com) ([MIT-licensed](icon_credits.txt))
 - Made possible by the generous usage terms of [open-meteo.com](https://open-meteo.com)
 - Uses [karoo-ext](https://github.com/hammerheadnav/karoo-ext) (Apache2-licensed)
+
+## Extension Developers: Headwind Data Type
+
+If the user has installed the headwind extension on his karoo, you can stream the headwind data type from other extensions via `karoo-ext`.
+Use extension id `karoo-headwind` with datatype id `headwind`. The datatype contains the following fields:
+
+- `FIELD_HEADWIND_ERROR_ID`: Error code, 0 or unset if no error occurred
+  - `1.0`: No GPS
+  - `2.0`: No weather data
+    - `3.0`: Headwind app has not been set up   
+- `FIELD_HEADWIND_SPEED_ID`: Headwind speed in the user's defined unit. If the user has set the headwind indicator to show the absolute wind speed instead of the headwind, this field will contain the absolute wind speed. 
+- `FIELD_HEADWIND_DIRECTION_ID`: Headwind bearing in degrees. If the user has set the headwind indicator to show the absolute wind direction instead of the headwind, this field will contain the absolute wind direction.
