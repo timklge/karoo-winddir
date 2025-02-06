@@ -15,7 +15,7 @@
         description="@string/tailwind_and_speed_description"
         displayName="@string/tailwind_and_speed"
         graphical="true"
-        icon="@drawable/ic_launcher"
+        icon="@drawable/wind"
         typeId="tailwind-and-ride-speed" />
 
     <DataType
@@ -38,6 +38,13 @@
         graphical="false"
         icon="@drawable/wind"
         typeId="headwindSpeed" />
+
+    <DataType
+        description="@string/userwind_speed_description"
+        displayName="@string/userwind_speed"
+        graphical="false"
+        icon="@drawable/wind"
+        typeId="userwindSpeed" />
 
     <DataType
         description="@string/relativeHumidity_description"

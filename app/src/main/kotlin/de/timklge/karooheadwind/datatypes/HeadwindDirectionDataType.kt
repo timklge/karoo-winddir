@@ -20,6 +20,7 @@ import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.internal.Emitter
 import io.hammerhead.karooext.internal.ViewEmitter
 import io.hammerhead.karooext.models.DataPoint
+import io.hammerhead.karooext.models.DataType
 import io.hammerhead.karooext.models.StreamState
 import io.hammerhead.karooext.models.UpdateGraphicConfig
 import io.hammerhead.karooext.models.ViewConfig
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -44,13 +46,13 @@ class HeadwindDirectionDataType(
 
     override fun startStream(emitter: Emitter<StreamState>) {
         val job = CoroutineScope(Dispatchers.IO).launch {
-            val steamDataFlow = karooSystem.getRelativeHeadingFlow(applicationContext)
+            karooSystem.getRelativeHeadingFlow(applicationContext)
                 .combine(applicationContext.streamCurrentWeatherData()) { headingResponse, data -> StreamData(headingResponse, data?.current?.windDirection, data?.current?.windSpeed) }
                 .combine(applicationContext.streamSettings(karooSystem)) { data, settings -> data.copy(settings = settings) }
                 .collect { streamData ->
                     val value = (streamData.headingResponse as? HeadingResponse.Value)?.diff
-                    val mapValues = mutableMapOf<String, Double>()
 
+                    var returnValue = 0.0
                     if (value == null || streamData.absoluteWindDirection == null || streamData.settings == null || streamData.windSpeed == null){
                         var errorCode = 1.0
                         var headingResponse = streamData.headingResponse
@@ -67,27 +69,19 @@ class HeadwindDirectionDataType(
                             errorCode = ERROR_NO_WEATHER_DATA.toDouble()
                         }
 
-                        mapValues[FIELD_HEADWIND_ERROR_ID] = errorCode
+                        returnValue = errorCode
                     } else {
-                        val absoluteWindSpeed = streamData.windSpeed
-                        val windDirection = when (streamData.settings.windDirectionIndicatorSetting){
+                        var windDirection = when (streamData.settings.windDirectionIndicatorSetting){
                             WindDirectionIndicatorSetting.HEADWIND_DIRECTION -> value
                             WindDirectionIndicatorSetting.WIND_DIRECTION -> streamData.absoluteWindDirection + 180
                         }
-                        val windSpeed = when (streamData.settings.windDirectionIndicatorTextSetting) {
-                            WindDirectionIndicatorTextSetting.HEADWIND_SPEED -> {
-                                val headwindSpeed = cos( (windDirection + 180) * Math.PI / 180.0) * absoluteWindSpeed
-                                headwindSpeed
-                            }
-                            WindDirectionIndicatorTextSetting.WIND_SPEED -> absoluteWindSpeed
-                            WindDirectionIndicatorTextSetting.NONE -> 0.0
-                        }
 
-                        mapValues[FIELD_HEADWIND_DIRECTION_ID] = windDirection
-                        mapValues[FIELD_HEADWIND_SPEED_ID] = windSpeed
+                        if (windDirection < 0) windDirection += 360
+
+                        returnValue = windDirection
                     }
 
-                    emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapValues)))
+                    emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to returnValue))))
                 }
         }
         emitter.setCancellable {
@@ -97,16 +91,16 @@ class HeadwindDirectionDataType(
 
     data class StreamData(val headingResponse: HeadingResponse?, val absoluteWindDirection: Double?, val windSpeed: Double?, val settings: HeadwindSettings? = null)
 
-    private fun previewFlow(): Flow<Map<String, Double>> {
+    data class DirectionAndSpeed(val bearing: Double, val speed: Double?)
+
+    private fun previewFlow(): Flow<DirectionAndSpeed> {
         return flow {
             while (true) {
                 val bearing = (0..360).random().toDouble()
                 val windSpeed = (0..20).random()
 
-                emit(mapOf(
-                    FIELD_HEADWIND_DIRECTION_ID to bearing,
-                    FIELD_HEADWIND_SPEED_ID to windSpeed.toDouble()
-                ))
+                emit(DirectionAndSpeed(bearing, windSpeed.toDouble()))
+
                 delay(2_000)
             }
         }
@@ -129,25 +123,29 @@ class HeadwindDirectionDataType(
         val flow = if (config.preview) {
             previewFlow()
         } else {
-            karooSystem.streamDataFlow(dataTypeId)
-                .map { (it as? StreamState.Streaming)?.dataPoint?.values ?: emptyMap() }
+            val directionFlow = karooSystem.streamDataFlow(dataTypeId).mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue }
+            val speedFlow = karooSystem.streamDataFlow(DataType.dataTypeId("karoo-headwind", "userwindSpeed")).map { (it as? StreamState.Streaming)?.dataPoint?.singleValue }
+
+            combine(directionFlow, speedFlow) { direction, speed ->
+                DirectionAndSpeed(direction, speed)
+            }
         }
 
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
             flow.collect { streamData ->
                 Log.d(KarooHeadwindExtension.TAG, "Updating headwind direction view")
 
-                val errorCode = streamData[FIELD_HEADWIND_ERROR_ID]?.toInt() ?: 0
-                if (errorCode != 0) {
+                val errorCode = streamData.bearing.let { if(it < 0) it.toInt() else null }
+                if (errorCode != null) {
                     emitter.updateView(getErrorWidget(glance, context, errorCode).remoteViews)
                     return@collect
                 }
 
-                val windDirection = streamData[FIELD_HEADWIND_DIRECTION_ID] ?: 0.0
-                val windSpeed = streamData[FIELD_HEADWIND_SPEED_ID] ?: 0.0
+                val windDirection = streamData.bearing
+                val windSpeed = streamData.speed
 
                 val result = glance.compose(context, DpSize.Unspecified) {
-                    HeadwindDirection(baseBitmap, windDirection.roundToInt(), config.textSize, windSpeed.toInt().toString(), viewSize = config.viewSize)
+                    HeadwindDirection(baseBitmap, windDirection.roundToInt(), config.textSize, windSpeed?.toInt()?.toString() ?: "", viewSize = config.viewSize)
                 }
 
                 emitter.updateView(result.remoteViews)
@@ -161,12 +159,8 @@ class HeadwindDirectionDataType(
     }
 
     companion object {
-        const val FIELD_HEADWIND_ERROR_ID = "FIELD_HEADWIND_ERROR_ID"
-        const val FIELD_HEADWIND_DIRECTION_ID = "FIELD_HEADWIND_DIRECTION_ID"
-        const val FIELD_HEADWIND_SPEED_ID = "FIELD_HEADWIND_SPEED_ID"
-
-        const val ERROR_NO_GPS = 1
-        const val ERROR_NO_WEATHER_DATA = 2
-        const val ERROR_APP_NOT_SET_UP = 3
+        const val ERROR_NO_GPS = -1
+        const val ERROR_NO_WEATHER_DATA = -2
+        const val ERROR_APP_NOT_SET_UP = -3
     }
 }

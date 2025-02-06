@@ -12,6 +12,7 @@ import de.timklge.karooheadwind.datatypes.HeadwindSpeedDataType
 import de.timklge.karooheadwind.datatypes.TailwindAndRideSpeedDataType
 import de.timklge.karooheadwind.datatypes.HeadwindDirectionDataType
 import de.timklge.karooheadwind.datatypes.TemperatureDataType
+import de.timklge.karooheadwind.datatypes.UserWindSpeedDataType
 import de.timklge.karooheadwind.datatypes.WeatherDataType
 import de.timklge.karooheadwind.datatypes.WeatherForecastDataType
 import de.timklge.karooheadwind.datatypes.WindSpeedDataType
@@ -46,7 +47,6 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.2.3") {
         const val TAG = "karoo-headwind"
     }
 
-
     lateinit var karooSystem: KarooSystemService
 
     private var updateLastKnownGpsJob: Job? = null
@@ -67,7 +67,8 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.2.3") {
             TemperatureDataType(applicationContext),
             WindDirectionDataType(karooSystem, applicationContext),
             PrecipitationDataType(applicationContext),
-            SurfacePressureDataType(applicationContext)
+            SurfacePressureDataType(applicationContext),
+            UserWindSpeedDataType(karooSystem, applicationContext)
         )
     }
 

@@ -49,11 +49,10 @@ The app will automatically attempt to download weather data for your current app
 ## Extension Developers: Headwind Data Type
 
 If the user has installed the headwind extension on his karoo, you can stream the headwind data type from other extensions via `karoo-ext`.
-Use extension id `karoo-headwind` with datatype id `headwind`. The datatype contains the following fields:
+Use extension id `karoo-headwind` with datatype ids `headwind` and `userwindSpeed`.
 
-- `FIELD_HEADWIND_ERROR_ID`: Error code, 0 or unset if no error occurred
-  - `1.0`: No GPS
-  - `2.0`: No weather data
-    - `3.0`: Headwind app has not been set up   
-- `FIELD_HEADWIND_SPEED_ID`: Headwind speed in the user's defined unit. If the user has set the headwind indicator to show the absolute wind speed instead of the headwind, this field will contain the absolute wind speed. 
-- `FIELD_HEADWIND_DIRECTION_ID`: Headwind bearing in degrees. If the user has set the headwind indicator to show the absolute wind direction instead of the headwind, this field will contain the absolute wind direction.
+- The `headwind` datatype contains a single field that either represents an error code or the wind direction. A `-1.0` indicates missing gps receiption, `-2.0` no weather data, `-3.0` that the headwind extension
+has not been set up. Otherwise, the value is the wind direction in degrees; if the user has set the headwind indicator to depict the absolute wind direction, the field will contain the absolute wind direction; otherwise
+it will contain the headwind direction.
+- The `userwindSpeed` datatype contains a single field with the wind speed in the user's defined unit. If the user has set the headwind indicator to show the absolute wind speed,
+this field will contain the absolute wind speed; otherwise it will contain the headwind speed.
