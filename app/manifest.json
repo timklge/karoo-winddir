@@ -7,5 +7,5 @@
   "latestVersionCode": 11,
   "developer": "timklge",
   "description": "Provides headwind direction, wind speed and other weather data fields",
-  "releaseNotes": "Update gps bearing retrieval, data type exposure for other extensions"
+  "releaseNotes": "Update gps bearing retrieval, data type exposure for other extensions, optimize build"
 }
