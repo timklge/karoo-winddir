@@ -36,7 +36,7 @@ val bitmapsByBearing = mutableMapOf<BitmapWithBearing, Bitmap>()
 
 fun getArrowBitmapByBearing(baseBitmap: Bitmap, bearing: Int): Bitmap {
     synchronized(bitmapsByBearing) {
-        val bearingRounded = (((bearing + 360) / 10.0).roundToInt() * 10) % 360
+        val bearingRounded = (((bearing + 360) / 15.0).roundToInt() * 15) % 360
 
         val bitmapWithBearing = BitmapWithBearing(baseBitmap, bearingRounded)
         val storedBitmap = bitmapsByBearing[bitmapWithBearing]
@@ -55,7 +55,7 @@ fun getArrowBitmapByBearing(baseBitmap: Bitmap, bearing: Int): Bitmap {
         canvas.save()
         canvas.scale((bitmap.width / baseBitmap.width.toFloat()), (bitmap.height / baseBitmap.height.toFloat()), (bitmap.width / 2).toFloat(), (bitmap.height / 2).toFloat())
         Log.d(KarooHeadwindExtension.TAG, "Drawing arrow at $bearingRounded")
-        canvas.rotate(bearing.toFloat(), (bitmap.width / 2).toFloat(), (bitmap.height / 2).toFloat())
+        canvas.rotate(bearingRounded.toFloat(), (bitmap.width / 2).toFloat(), (bitmap.height / 2).toFloat())
         canvas.drawBitmap(baseBitmap, ((bitmap.width - baseBitmap.width) / 2).toFloat(), ((bitmap.height - baseBitmap.height) / 2).toFloat(), paint)
         canvas.restore()
 
