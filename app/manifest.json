@@ -3,9 +3,9 @@
   "packageName": "de.timklge.karooheadwind",
   "iconUrl": "https://github.com/timklge/karoo-headwind/releases/latest/download/karoo-headwind.png",
   "latestApkUrl": "https://github.com/timklge/karoo-headwind/releases/latest/download/app-release.apk",
-  "latestVersion": "1.2.2",
-  "latestVersionCode": 10,
+  "latestVersion": "1.2.3",
+  "latestVersionCode": 11,
   "developer": "timklge",
   "description": "Provides headwind direction, wind speed and other weather data fields",
-  "releaseNotes": "Reduce font size in tailwind indicators, update gps bearing retrieval"
+  "releaseNotes": "Update gps bearing retrieval, data type exposure for other extensions, optimize build"
 }

@@ -12,6 +12,7 @@ import de.timklge.karooheadwind.datatypes.HeadwindSpeedDataType
 import de.timklge.karooheadwind.datatypes.TailwindAndRideSpeedDataType
 import de.timklge.karooheadwind.datatypes.HeadwindDirectionDataType
 import de.timklge.karooheadwind.datatypes.TemperatureDataType
+import de.timklge.karooheadwind.datatypes.UserWindSpeedDataType
 import de.timklge.karooheadwind.datatypes.WeatherDataType
 import de.timklge.karooheadwind.datatypes.WeatherForecastDataType
 import de.timklge.karooheadwind.datatypes.WindSpeedDataType
@@ -41,11 +42,10 @@ import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
-class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.2.2") {
+class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.2.3") {
     companion object {
         const val TAG = "karoo-headwind"
     }
-
 
     lateinit var karooSystem: KarooSystemService
 
@@ -67,7 +67,8 @@ class KarooHeadwindExtension : KarooExtension("karoo-headwind", "1.2.2") {
             TemperatureDataType(applicationContext),
             WindDirectionDataType(karooSystem, applicationContext),
             PrecipitationDataType(applicationContext),
-            SurfacePressureDataType(applicationContext)
+            SurfacePressureDataType(applicationContext),
+            UserWindSpeedDataType(karooSystem, applicationContext)
         )
     }
 

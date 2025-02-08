@@ -27,4 +27,6 @@
     <string name="headwind_speed_description">Current headwind speed</string>
     <string name="temperature">Temperature</string>
     <string name="temperature_description">Current temperature in configured unit</string>
+    <string name="userwind_speed_description">Current headwind or wind speed based on user setting</string>
+    <string name="userwind_speed">Set wind speed</string>
 </resources>
