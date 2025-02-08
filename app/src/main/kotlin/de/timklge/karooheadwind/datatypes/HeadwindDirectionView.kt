@@ -22,7 +22,6 @@ import androidx.glance.layout.Row
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
-import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.text.FontFamily
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
@@ -39,7 +38,6 @@ fun getArrowBitmapByBearing(baseBitmap: Bitmap, bearing: Int): Bitmap {
     val paint = Paint().apply {
         color = android.graphics.Color.BLACK
         style = Paint.Style.STROKE
-//            strokeWidth = 15f
         isAntiAlias = true
     }
 
@@ -53,12 +51,12 @@ fun getArrowBitmapByBearing(baseBitmap: Bitmap, bearing: Int): Bitmap {
     return bitmap
 }
 
-@OptIn(ExperimentalGlancePreviewApi::class)
 @Composable
-fun HeadwindDirection(baseBitmap: Bitmap, bearing: Int, fontSize: Int,
-                      overlayText: String, overlaySubText: String? = null,
-                      dayColor: Color = Color.Black, nightColor: Color = Color.White,
-                      viewSize: Pair<Int, Int>) {
+fun HeadwindDirection(
+    baseBitmap: Bitmap, bearing: Int, fontSize: Int,
+    overlayText: String, overlaySubText: String? = null,
+    dayColor: Color = Color.Black, nightColor: Color = Color.White
+) {
     Box(
         modifier = GlanceModifier.fillMaxSize().padding(5.dp),
         contentAlignment = Alignment(

@@ -143,7 +143,12 @@ class HeadwindDirectionDataType(
                 val windSpeed = streamData.speed
 
                 val result = glance.compose(context, DpSize.Unspecified) {
-                    HeadwindDirection(baseBitmap, windDirection.roundToInt(), config.textSize, windSpeed?.toInt()?.toString() ?: "", viewSize = config.viewSize)
+                    HeadwindDirection(
+                        baseBitmap,
+                        windDirection.roundToInt(),
+                        config.textSize,
+                        windSpeed?.toInt()?.toString() ?: ""
+                    )
                 }
 
                 emitter.updateView(result.remoteViews)
