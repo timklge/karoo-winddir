@@ -55,6 +55,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.mapbox.sdk.turf)
     implementation(libs.hammerhead.karoo.ext)
     implementation(libs.androidx.core.ktx)
     implementation(libs.bundles.androidx.lifeycle)

@@ -16,6 +16,7 @@ import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
@@ -26,9 +27,10 @@ val jsonWithUnknownKeys = Json { ignoreUnknownKeys = true }
 
 val settingsKey = stringPreferencesKey("settings")
 val widgetSettingsKey = stringPreferencesKey("widgetSettings")
-val currentDataKey = stringPreferencesKey("current")
+val currentDataKey = stringPreferencesKey("currentForecasts")
 val statsKey = stringPreferencesKey("stats")
 val lastKnownPositionKey = stringPreferencesKey("lastKnownPosition")
+val elevationDataKey = stringPreferencesKey("elevationData")
 
 suspend fun saveSettings(context: Context, settings: HeadwindSettings) {
     context.dataStore.edit { t ->
@@ -48,7 +50,7 @@ suspend fun saveStats(context: Context, stats: HeadwindStats) {
     }
 }
 
-suspend fun saveCurrentData(context: Context, forecast: OpenMeteoCurrentWeatherResponse) {
+suspend fun saveCurrentData(context: Context, forecast: List<OpenMeteoCurrentWeatherResponse>) {
     context.dataStore.edit { t ->
         t[currentDataKey] = Json.encodeToString(forecast)
     }
@@ -66,6 +68,11 @@ suspend fun saveLastKnownPosition(context: Context, gpsCoordinates: GpsCoordinat
     }
 }
 
+suspend fun saveUpcomingRouteData(context: Context, elevationData: UpcomingRoute) {
+    context.dataStore.edit { t ->
+        t[elevationDataKey] = Json.encodeToString(elevationData)
+    }
+}
 
 fun Context.streamWidgetSettings(): Flow<HeadwindWidgetSettings> {
     return dataStore.data.map { settingsJson ->
@@ -99,6 +106,21 @@ fun Context.streamSettings(karooSystemService: KarooSystemService): Flow<Headwin
         } catch(e: Throwable){
             Log.e(KarooHeadwindExtension.TAG, "Failed to read preferences", e)
             jsonWithUnknownKeys.decodeFromString<HeadwindSettings>(HeadwindSettings.defaultSettings)
+        }
+    }.distinctUntilChanged()
+}
+
+fun Context.streamUpcomingRoute(karooSystemService: KarooSystemService): Flow<UpcomingRoute?> {
+    return dataStore.data.map { settingsJson ->
+        try {
+            if (settingsJson.contains(elevationDataKey)){
+                jsonWithUnknownKeys.decodeFromString<UpcomingRoute>(settingsJson[elevationDataKey]!!)
+            } else {
+                null
+            }
+        } catch(e: Throwable){
+            Log.e(KarooHeadwindExtension.TAG, "Failed to read elevation data", e)
+            null
         }
     }.distinctUntilChanged()
 }
@@ -143,20 +165,18 @@ fun KarooSystemService.streamUserProfile(): Flow<UserProfile> {
     }
 }
 
-fun Context.streamCurrentWeatherData(): Flow<OpenMeteoCurrentWeatherResponse?> {
+fun Context.streamCurrentWeatherData(): Flow<List<OpenMeteoCurrentWeatherResponse>> {
     return dataStore.data.map { settingsJson ->
         try {
             val data = settingsJson[currentDataKey]
-            data?.let { d -> jsonWithUnknownKeys.decodeFromString<OpenMeteoCurrentWeatherResponse>(d) }
+            data?.let { d -> jsonWithUnknownKeys.decodeFromString<List<OpenMeteoCurrentWeatherResponse>>(d) } ?: emptyList()
         } catch (e: Throwable) {
             Log.e(KarooHeadwindExtension.TAG, "Failed to read weather data", e)
-            null
+            emptyList()
         }
     }.distinctUntilChanged().map { response ->
-        if (response != null && response.current.time * 1000 >= System.currentTimeMillis() - (1000 * 60 * 60 * 12)){
-            response
-        } else {
-            null
+        response.filter { forecast ->
+            forecast.current.time * 1000 >= System.currentTimeMillis() - (1000 * 60 * 60 * 12)
         }
     }
 }

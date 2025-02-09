@@ -33,6 +33,7 @@ import io.hammerhead.karooext.models.DataType
 import io.hammerhead.karooext.models.HttpResponseState
 import io.hammerhead.karooext.models.OnHttpResponse
 import io.hammerhead.karooext.models.OnLocationChanged
+import io.hammerhead.karooext.models.OnNavigationState
 import io.hammerhead.karooext.models.OnStreamState
 import io.hammerhead.karooext.models.StreamState
 import io.hammerhead.karooext.models.UserProfile
@@ -76,6 +77,17 @@ fun KarooSystemService.streamDataFlow(dataTypeId: String): Flow<StreamState> {
 fun KarooSystemService.streamLocation(): Flow<OnLocationChanged> {
     return callbackFlow {
         val listenerId = addConsumer { event: OnLocationChanged ->
+            trySendBlocking(event)
+        }
+        awaitClose {
+            removeConsumer(listenerId)
+        }
+    }
+}
+
+fun KarooSystemService.streamNavigationState(): Flow<OnNavigationState> {
+    return callbackFlow {
+        val listenerId = addConsumer { event: OnNavigationState ->
             trySendBlocking(event)
         }
         awaitClose {

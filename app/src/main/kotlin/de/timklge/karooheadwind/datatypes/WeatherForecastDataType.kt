@@ -6,13 +6,10 @@ import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
-import androidx.glance.action.ActionParameters
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
-import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.background
 import androidx.glance.color.ColorProvider
@@ -28,9 +25,7 @@ import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
 import de.timklge.karooheadwind.OpenMeteoData
 import de.timklge.karooheadwind.OpenMeteoForecastData
 import de.timklge.karooheadwind.WeatherInterpretation
-import de.timklge.karooheadwind.datatypes.WeatherDataType.StreamData
 import de.timklge.karooheadwind.getHeadingFlow
-import de.timklge.karooheadwind.saveWidgetSettings
 import de.timklge.karooheadwind.screens.HeadwindSettings
 import de.timklge.karooheadwind.screens.HeadwindWidgetSettings
 import de.timklge.karooheadwind.screens.PrecipitationUnit
@@ -55,7 +50,7 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -64,27 +59,6 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
-
-class CycleHoursAction : ActionCallback {
-    override suspend fun onAction(
-        context: Context,
-        glanceId: GlanceId,
-        parameters: ActionParameters
-    ) {
-        Log.d(KarooHeadwindExtension.TAG, "Cycling hours")
-
-        val currentSettings = context.streamWidgetSettings().first()
-        val data = context.streamCurrentWeatherData().first()
-
-        var hourOffset = currentSettings.currentForecastHourOffset + 3
-        if (data == null || hourOffset >= ((data.forecastData?.weatherCode?.size) ?: 0)) {
-            hourOffset = 0
-        }
-
-        val newSettings = currentSettings.copy(currentForecastHourOffset = hourOffset)
-        saveWidgetSettings(context, newSettings)
-    }
-}
 
 @OptIn(ExperimentalGlanceRemoteViewsApi::class)
 class WeatherForecastDataType(
@@ -103,9 +77,10 @@ class WeatherForecastDataType(
             val currentWeatherData = applicationContext.streamCurrentWeatherData()
 
             currentWeatherData
+                .filter { it.isNotEmpty() }
                 .collect { data ->
-                    Log.d(KarooHeadwindExtension.TAG, "Wind code: ${data?.current?.weatherCode}")
-                    emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to (data?.current?.weatherCode?.toDouble() ?: 0.0)))))
+                    Log.d(KarooHeadwindExtension.TAG, "Wind code: ${data.first().current.weatherCode}")
+                    emitter.onNext(StreamState.Streaming(DataPoint(dataTypeId, mapOf(DataType.Field.SINGLE to (data.first().current.weatherCode.toDouble() ?: 0.0)))))
                 }
         }
         emitter.setCancellable {
@@ -113,7 +88,7 @@ class WeatherForecastDataType(
         }
     }
 
-    data class StreamData(val data: OpenMeteoCurrentWeatherResponse?, val settings: HeadwindSettings,
+    data class StreamData(val data: List<OpenMeteoCurrentWeatherResponse>?, val settings: HeadwindSettings,
                           val widgetSettings: HeadwindWidgetSettings? = null, val profile: UserProfile? = null, val headingResponse: HeadingResponse? = null)
 
     private fun previewFlow(): Flow<StreamData> = flow {
@@ -130,14 +105,14 @@ class WeatherForecastDataType(
 
             emit(
                 StreamData(
-                    OpenMeteoCurrentWeatherResponse(
+                    listOf(OpenMeteoCurrentWeatherResponse(
                         OpenMeteoData(Instant.now().epochSecond, 0, 20.0, 50, 3.0, 0, 1013.25, 15.0, 30.0, 30.0, WeatherInterpretation.getKnownWeatherCodes().random()),
                         0.0, 0.0, "Europe/Berlin", 30.0, 0,
 
                         OpenMeteoForecastData(forecastTimes, forecastTemperatures, forecastPrecipitationPropability,
                             forecastPrecipitation, forecastWeatherCodes, forecastWindSpeed, forecastWindDirection,
                             forecastWindGusts)
-                    ), HeadwindSettings())
+                    )), HeadwindSettings())
             )
 
             delay(5_000)
