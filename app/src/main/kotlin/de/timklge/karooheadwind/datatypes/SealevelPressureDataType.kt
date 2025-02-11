@@ -5,6 +5,6 @@ import de.timklge.karooheadwind.OpenMeteoCurrentWeatherResponse
 
 class SealevelPressureDataType(context: Context) : BaseDataType(context, "sealevelPressure"){
     override fun getValue(data: OpenMeteoCurrentWeatherResponse): Double {
-        return data.current.sealevelPressure
+        return data.current.sealevelPressure ?: 0.0
     }
 }
