@@ -96,6 +96,13 @@
         typeId="surfacePressure" />
 
     <DataType
+        description="@string/sealevelPressure_description"
+        displayName="@string/sealevelPressure"
+        graphical="false"
+        icon="@drawable/ic_cloud"
+        typeId="sealevelPressure" />
+
+    <DataType
         description="@string/temperature_description"
         displayName="@string/temperature"
         graphical="false"

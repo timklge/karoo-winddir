@@ -131,7 +131,7 @@ class WeatherForecastDataType(
             emit(
                 StreamData(
                     OpenMeteoCurrentWeatherResponse(
-                        OpenMeteoData(Instant.now().epochSecond, 0, 20.0, 50, 3.0, 0, 1013.25, 15.0, 30.0, 30.0, WeatherInterpretation.getKnownWeatherCodes().random()),
+                        OpenMeteoData(Instant.now().epochSecond, 0, 20.0, 50, 3.0, 0, 1013.25, 980.0, 15.0, 30.0, 30.0, WeatherInterpretation.getKnownWeatherCodes().random()),
                         0.0, 0.0, "Europe/Berlin", 30.0, 0,
 
                         OpenMeteoForecastData(forecastTimes, forecastTemperatures, forecastPrecipitationPropability,

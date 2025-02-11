@@ -19,6 +19,8 @@
     <string name="precipitation_description">Current precipitation (rainfall / snowfall)</string>
     <string name="surfacePressure">Surface pressure</string>
     <string name="surfacePressure_description">Atmospheric pressure at surface in configured unit</string>
+    <string name="sealevelPressure">Sealevel pressure</string>
+    <string name="sealevelPressure_description">Atmospheric pressure at sea level in configured unit</string>
     <string name="weather">Weather</string>
     <string name="weather_description">Current weather conditions</string>
     <string name="weather_forecast">Weather Forecast</string>
